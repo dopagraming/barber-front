@@ -18,6 +18,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const { user, logout } = useAuth();
   const { t, language, changeLanguage } = useLanguage();
   const navigate = useNavigate();
@@ -30,12 +31,6 @@ const Navbar = () => {
   };
 
   const isActive = (path) => location.pathname === path;
-
-  const navItems = [
-    { path: "/", label: t("home") },
-    { path: "/services", label: t("services") },
-    ...(user ? [{ path: "/booking", label: t("booking") }] : []),
-  ];
 
   const languages = [
     { code: "ar", name: "العربية", flag: "🇸🇦" },
@@ -57,29 +52,12 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8 space-x-reverse">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`text-sm font-medium transition-colors duration-200 ${
-                  isActive(item.path)
-                    ? "text-primary-500"
-                    : "text-gray-300 hover:text-white"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-
           {/* Right Side */}
           <div className="hidden md:flex items-center space-x-4 space-x-reverse">
             {/* Language Toggle */}
             <div className="relative">
               <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
+                onClick={() => setShowLangMenu(!showLangMenu)}
                 className="p-2 text-gray-300 hover:text-white transition-colors flex items-center"
               >
                 <Globe className="w-5 h-5 ml-1" />
@@ -89,7 +67,7 @@ const Navbar = () => {
               </button>
 
               <AnimatePresence>
-                {showUserMenu && (
+                {showLangMenu && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -125,9 +103,17 @@ const Navbar = () => {
                   className="flex items-center space-x-2 space-x-reverse p-2 rounded-lg hover:bg-dark-800 transition-colors"
                 >
                   <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">
-                      {user.firstName?.charAt(0)}
-                    </span>
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt="avatar"
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <span className="text-white text-sm font-medium">
+                        {user.firstName?.charAt(0)}
+                      </span>
+                    )}
                   </div>
                   <span className="text-white text-sm">{user.firstName}</span>
                 </button>

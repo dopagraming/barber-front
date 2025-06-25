@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import api from "../lib/axios";
+import { auth, provider } from "../../firebase";
+import { signInWithPopup } from "firebase/auth";
 
 const AuthContext = createContext();
 
@@ -86,12 +88,37 @@ export const AuthProvider = ({ children }) => {
     toast.success("تم تسجيل الخروج بنجاح");
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const googleUser = result.user;
+
+      // Optional: get ID token to send to backend for verification
+      const idToken = await googleUser.getIdToken();
+
+      const response = await api.post("api/auth/google", { idToken });
+      const { token, user } = response.data;
+
+      localStorage.setItem("token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setUser(user);
+
+      toast.success("تم تسجيل الدخول عبر Google");
+      return { success: true };
+    } catch (error) {
+      console.error("Google login error", error);
+      toast.error("فشل تسجيل الدخول عبر Google");
+      return { success: false };
+    }
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
     logout,
+    loginWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

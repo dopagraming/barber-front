@@ -1,36 +1,44 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { loginWithGoogle } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const result = await login(formData.email, formData.password);
-    
+
     if (result.success) {
-      navigate('/');
+      navigate("/");
     }
-    
+
+    setLoading(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    const result = await loginWithGoogle();
+    if (result.success) navigate("/");
     setLoading(false);
   };
 
@@ -48,7 +56,9 @@ const Login = () => {
             <div className="w-16 h-16 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-2xl">B</span>
             </div>
-            <h2 className="text-3xl font-bold text-white mb-2">مرحباً بعودتك</h2>
+            <h2 className="text-3xl font-bold text-white mb-2">
+              مرحباً بعودتك
+            </h2>
             <p className="text-gray-400">سجل دخولك للوصول إلى حسابك</p>
           </div>
 
@@ -81,8 +91,7 @@ const Login = () => {
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
-                
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -95,7 +104,11 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -106,15 +119,31 @@ const Login = () => {
               disabled={loading}
               className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
-              {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+              {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </button>
           </form>
+          {/* Login with Google */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full bg-white text-dark-900 py-3 mt-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-100 transition-all transform hover:scale-105"
+          >
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              alt="Google"
+              className="w-5 h-5"
+            />
+            <span>تسجيل الدخول عبر Google</span>
+          </button>
 
           {/* Footer */}
           <div className="text-center mt-6">
             <p className="text-gray-400">
-              ليس لديك حساب؟{' '}
-              <Link to="/register" className="text-primary-500 hover:text-primary-400 font-medium">
+              ليس لديك حساب؟{" "}
+              <Link
+                to="/register"
+                className="text-primary-500 hover:text-primary-400 font-medium"
+              >
                 إنشاء حساب جديد
               </Link>
             </p>
