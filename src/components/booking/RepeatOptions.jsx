@@ -1,96 +1,74 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, ArrowRight, Repeat, AlertCircle } from "lucide-react";
+import { Calendar, Clock, ArrowRight, Repeat, X } from "lucide-react";
 import { format, addDays, addWeeks, addMonths } from "date-fns";
 import { ar } from "date-fns/locale";
 
 const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
-  const [wantRepeat, setWantRepeat] = useState(data.wantRepeat || false);
-  const [repeatInterval, setRepeatInterval] = useState(
-    data.repeatInterval || 1
+  const [wantRepeat, setWantRepeat] = useState(data.isRepeating || false);
+  const [repeatConfig, setRepeatConfig] = useState(
+    data.repeatConfig || {
+      interval: 1,
+      unit: "week",
+      occurrences: 4,
+    }
   );
-  const [repeatUnit, setRepeatUnit] = useState(data.repeatUnit || "week");
-  const [repeatCount, setRepeatCount] = useState(data.repeatCount || 4);
 
   const handleRepeatChange = (value) => {
     setWantRepeat(value);
-    updateData({ wantRepeat: value });
+    updateData({ isRepeating: value });
   };
 
-  const handleIntervalChange = (value) => {
-    if (value >= 1 && value <= 12) {
-      setRepeatInterval(value);
-      updateData({ repeatInterval: value });
-    }
+  const handleConfigChange = (key, value) => {
+    const newConfig = { ...repeatConfig, [key]: value };
+    setRepeatConfig(newConfig);
+    updateData({ repeatConfig: newConfig });
   };
 
-  const handleUnitChange = (value) => {
-    setRepeatUnit(value);
-    updateData({ repeatUnit: value });
-  };
+  const generatePreviewDates = () => {
+    if (!wantRepeat || !data.date) return [data.date];
 
-  const handleCountChange = (value) => {
-    if (value >= 1 && value <= 52) {
-      setRepeatCount(value);
-      updateData({ repeatCount: value });
-    }
-  };
+    const dates = [data.date];
+    const { interval, unit, occurrences } = repeatConfig;
 
-  const generateRepeatDates = () => {
-    if (!wantRepeat || !data.date) return [];
+    for (let i = 1; i < occurrences; i++) {
+      let nextDate = new Date(data.date);
 
-    const dates = [];
-    let currentDate = new Date(data.date);
-
-    for (let i = 0; i < repeatCount; i++) {
-      dates.push(new Date(currentDate));
-
-      switch (repeatUnit) {
-        case "day":
-          currentDate = addDays(currentDate, repeatInterval);
-          break;
-        case "week":
-          currentDate = addWeeks(currentDate, repeatInterval);
-          break;
-        case "month":
-          currentDate = addMonths(currentDate, repeatInterval);
-          break;
+      if (unit === "day") {
+        nextDate = addDays(nextDate, interval * i);
+      } else if (unit === "week") {
+        nextDate = addWeeks(nextDate, interval * i);
+      } else if (unit === "month") {
+        nextDate = addMonths(nextDate, interval * i);
       }
+
+      dates.push(nextDate);
     }
 
     return dates;
   };
 
+  const previewDates = generatePreviewDates();
+  const totalCost =
+    (data.service?.price || 0) * (data.peopleCount || 1) * previewDates.length;
+
   const handleContinue = () => {
-    const repeatDates = wantRepeat ? generateRepeatDates() : [data.date];
-    updateData({
-      wantRepeat,
-      repeatInterval,
-      repeatUnit,
-      repeatCount,
-      repeatDates,
-    });
+    if (wantRepeat) {
+      updateData({
+        isRepeating: true,
+        repeatConfig,
+        totalAppointments: previewDates.length,
+        totalCost,
+      });
+    } else {
+      updateData({
+        isRepeating: false,
+        totalAppointments: 1,
+        totalCost: (data.service?.price || 0) * (data.peopleCount || 1),
+      });
+    }
     onNext();
   };
-
-  const getUnitText = (unit) => {
-    switch (unit) {
-      case "day":
-        return "يوم";
-      case "week":
-        return "أسبوع";
-      case "month":
-        return "شهر";
-      default:
-        return unit;
-    }
-  };
-
-  const repeatDates = generateRepeatDates();
-  const totalCost =
-    (data.service?.price || 0) *
-    (data.peopleCount || 1) *
-    (wantRepeat ? repeatCount : 1);
 
   return (
     <div className="bg-dark-800/50 rounded-2xl p-8">
@@ -99,12 +77,12 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
           <Repeat className="w-6 h-6 ml-2" />
           تكرار الموعد
         </h3>
-        <p className="text-gray-400">هل تريد تكرار هذا الموعد بانتظام؟</p>
+        <p className="text-gray-400">هل تريد تكرار هذا الموعد؟</p>
       </div>
 
       {/* Current Appointment Summary */}
       <div className="bg-dark-700/50 rounded-lg p-4 mb-8">
-        <h4 className="text-white font-semibold mb-3">ملخص الموعد:</h4>
+        <h4 className="text-white font-semibold mb-3">الموعد المحدد:</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="flex items-center text-gray-300">
             <Calendar className="w-4 h-4 ml-2" />
@@ -115,18 +93,15 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
             <Clock className="w-4 h-4 ml-2" />
             {data.time}
           </div>
-          <div className="text-gray-300">الخدمة: {data.service?.nameAr}</div>
-          <div className="text-gray-300">
-            عدد الأشخاص: {data.peopleCount || 1}
-          </div>
         </div>
       </div>
 
-      {/* Repeat Question */}
+      {/* Repeat Options */}
       <div className="mb-8">
-        <h4 className="text-white font-semibold mb-4">تكرار الموعد:</h4>
+        <h4 className="text-white font-semibold mb-4">خيارات التكرار:</h4>
+
         <div className="space-y-4">
-          <label className="flex items-center p-4 bg-dark-700/50 rounded-lg cursor-pointer hover:bg-dark-700 transition-all">
+          <label className="flex items-center p-4 bg-dark-700/50 rounded-lg cursor-pointer hover:bg-dark-700 transition-colors">
             <input
               type="radio"
               name="repeat"
@@ -140,7 +115,7 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
             </div>
           </label>
 
-          <label className="flex items-center p-4 bg-dark-700/50 rounded-lg cursor-pointer hover:bg-dark-700 transition-all">
+          <label className="flex items-center p-4 bg-dark-700/50 rounded-lg cursor-pointer hover:bg-dark-700 transition-colors">
             <input
               type="radio"
               name="repeat"
@@ -150,149 +125,146 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
             />
             <div>
               <span className="text-white font-medium">تكرار الموعد</span>
-              <p className="text-gray-400 text-sm">حجز مواعيد متكررة بانتظام</p>
+              <p className="text-gray-400 text-sm">
+                حجز مواعيد متكررة بفترات منتظمة
+              </p>
             </div>
           </label>
         </div>
       </div>
 
-      {/* Repeat Options */}
+      {/* Repeat Configuration */}
       {wantRepeat && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          transition={{ duration: 0.3 }}
           className="mb-8"
         >
-          <div className="bg-dark-700/50 rounded-lg p-6">
-            <h4 className="text-white font-semibold mb-4">إعدادات التكرار:</h4>
+          <div className="bg-primary-500/10 border border-primary-500/30 rounded-lg p-6">
+            <h4 className="text-primary-400 font-semibold mb-4">
+              إعدادات التكرار:
+            </h4>
 
-            {/* Repeat Interval */}
-            <div className="mb-6">
-              <label className="block text-white font-medium mb-3">
-                تكرر كل:
-              </label>
-              <div className="flex items-center space-x-4 space-x-reverse">
-                <div className="flex items-center space-x-2 space-x-reverse">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {/* Interval */}
+              <div>
+                <label className="block text-white font-medium mb-2">كل:</label>
+                <div className="flex items-center">
                   <button
-                    onClick={() => handleIntervalChange(repeatInterval - 1)}
-                    disabled={repeatInterval <= 1}
-                    className="w-8 h-8 rounded bg-dark-600 hover:bg-dark-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white"
+                    onClick={() =>
+                      handleConfigChange(
+                        "interval",
+                        Math.max(1, repeatConfig.interval - 1)
+                      )
+                    }
+                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded-l-lg flex items-center justify-center"
                   >
                     -
                   </button>
-                  <span className="px-4 py-2 bg-dark-600 rounded text-center min-w-[60px] text-white">
-                    {repeatInterval}
+                  <span className="px-4 py-2 bg-dark-700 text-white text-center min-w-[60px]">
+                    {repeatConfig.interval}
                   </span>
                   <button
-                    onClick={() => handleIntervalChange(repeatInterval + 1)}
-                    disabled={repeatInterval >= 12}
-                    className="w-8 h-8 rounded bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white"
+                    onClick={() =>
+                      handleConfigChange("interval", repeatConfig.interval + 1)
+                    }
+                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded-r-lg flex items-center justify-center"
                   >
                     +
                   </button>
                 </div>
+              </div>
 
+              {/* Unit */}
+              <div>
+                <label className="block text-white font-medium mb-2">
+                  الوحدة:
+                </label>
                 <select
-                  value={repeatUnit}
-                  onChange={(e) => handleUnitChange(e.target.value)}
-                  className="bg-dark-600 border border-dark-500 rounded px-3 py-2 text-white focus:outline-none focus:border-primary-500"
+                  value={repeatConfig.unit}
+                  onChange={(e) => handleConfigChange("unit", e.target.value)}
+                  className="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
                 >
                   <option value="day">يوم</option>
                   <option value="week">أسبوع</option>
                   <option value="month">شهر</option>
                 </select>
               </div>
-            </div>
 
-            {/* Repeat Count */}
-            <div className="mb-6">
-              <label className="block text-white font-medium mb-3">
-                عدد التكرارات:
-              </label>
-              <div className="flex items-center space-x-4 space-x-reverse">
-                <button
-                  onClick={() => handleCountChange(repeatCount - 1)}
-                  disabled={repeatCount <= 1}
-                  className="w-8 h-8 rounded bg-dark-600 hover:bg-dark-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white"
-                >
-                  -
-                </button>
-                <span className="px-4 py-2 bg-dark-600 rounded text-center min-w-[60px] text-white">
-                  {repeatCount}
-                </span>
-                <button
-                  onClick={() => handleCountChange(repeatCount + 1)}
-                  disabled={repeatCount >= 52}
-                  className="w-8 h-8 rounded bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white"
-                >
-                  +
-                </button>
-                <span className="text-gray-400">مرة</span>
+              {/* Occurrences */}
+              <div>
+                <label className="block text-white font-medium mb-2">
+                  عدد المرات:
+                </label>
+                <div className="flex items-center">
+                  <button
+                    onClick={() =>
+                      handleConfigChange(
+                        "occurrences",
+                        Math.max(1, repeatConfig.occurrences - 1)
+                      )
+                    }
+                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded-l-lg flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  <span className="px-4 py-2 bg-dark-700 text-white text-center min-w-[60px]">
+                    {repeatConfig.occurrences}
+                  </span>
+                  <button
+                    onClick={() =>
+                      handleConfigChange(
+                        "occurrences",
+                        repeatConfig.occurrences + 1
+                      )
+                    }
+                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded-r-lg flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Preview */}
             <div className="bg-dark-800/50 rounded-lg p-4">
               <h5 className="text-white font-medium mb-3">معاينة المواعيد:</h5>
-              <p className="text-gray-400 text-sm mb-3">
-                كل {repeatInterval} {getUnitText(repeatUnit)} في {data.time}
-              </p>
-
-              <div className="max-h-32 overflow-y-auto space-y-1">
-                {repeatDates.slice(0, 5).map((date, index) => (
-                  <div key={index} className="text-sm text-gray-300">
-                    {index + 1}.{" "}
-                    {format(date, "EEEE، d MMMM yyyy", { locale: ar })}
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {previewDates.map((date, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center text-sm"
+                  >
+                    <span className="text-gray-300">
+                      {index + 1}.{" "}
+                      {format(date, "EEEE، d MMMM yyyy", { locale: ar })} -{" "}
+                      {data.time}
+                    </span>
+                    <span className="text-primary-500 font-medium">
+                      {(data.service?.price || 0) * (data.peopleCount || 1)}{" "}
+                      ريال
+                    </span>
                   </div>
                 ))}
-                {repeatDates.length > 5 && (
-                  <div className="text-sm text-gray-400">
-                    ... و {repeatDates.length - 5} مواعيد أخرى
-                  </div>
-                )}
+              </div>
+
+              <div className="border-t border-dark-600 mt-4 pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-white font-semibold">
+                    المجموع الكلي:
+                  </span>
+                  <span className="text-primary-500 font-bold text-lg">
+                    {totalCost} ريال
+                  </span>
+                </div>
+                <p className="text-gray-400 text-sm mt-1">
+                  {previewDates.length} موعد × {data.peopleCount || 1} شخص
+                </p>
               </div>
             </div>
           </div>
         </motion.div>
       )}
-
-      {/* Cost Summary */}
-      <div className="bg-primary-500/10 border border-primary-500/30 rounded-lg p-4 mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h4 className="text-primary-400 font-semibold">
-              التكلفة الإجمالية:
-            </h4>
-            <p className="text-primary-300 text-sm">
-              {wantRepeat
-                ? `${data.service?.price} شيكل × ${
-                    data.peopleCount || 1
-                  } شخص × ${repeatCount} مرة`
-                : `${data.service?.price} شيكل × ${data.peopleCount || 1} شخص`}
-            </p>
-          </div>
-          <div className="text-primary-500 font-bold text-2xl">
-            {totalCost} شيكل
-          </div>
-        </div>
-      </div>
-
-      {/* Important Note */}
-      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-8">
-        <div className="flex items-start space-x-3 space-x-reverse">
-          <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
-          <div>
-            <h5 className="text-yellow-400 font-medium mb-1">ملاحظة مهمة:</h5>
-            <ul className="text-yellow-300 text-sm space-y-1">
-              <li>• سيتم حجز جميع المواعيد مع نفس الحلاق</li>
-              <li>• يمكن إلغاء أو تعديل أي موعد منفرد لاحقاً</li>
-              <li>• الدفع مطلوب عند كل موعد</li>
-              {wantRepeat && <li>• سيتم إرسال تذكير قبل كل موعد بـ 24 ساعة</li>}
-            </ul>
-          </div>
-        </div>
-      </div>
 
       {/* Navigation Buttons */}
       <div className="flex justify-between">

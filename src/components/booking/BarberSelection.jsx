@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Star, ArrowRight } from "lucide-react";
-import axios from "axios";
 import LoadingSpinner from "../LoadingSpinner";
 import api from "../../lib/axios";
 

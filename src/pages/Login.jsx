@@ -27,11 +27,13 @@ const Login = () => {
     setLoading(true);
 
     const result = await login(formData.email, formData.password);
-
+    console.log(result);
     if (result.success) {
-      navigate("/");
+      if (result.role == "admin") {
+        console.log("good");
+        navigate("/dashboard");
+      } else navigate("/");
     }
-
     setLoading(false);
   };
 

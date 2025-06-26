@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, Star, Users, Minus, Plus } from "lucide-react";
+import { Clock, Star, Users, Plus, Minus } from "lucide-react";
 import axios from "axios";
 import LoadingSpinner from "../LoadingSpinner";
 import api from "../../lib/axios";
@@ -39,15 +39,15 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
     updateData({ service, peopleCount });
   };
 
-  const handlePeopleCountChange = (count) => {
-    if (count >= 1 && count <= 10) {
-      setPeopleCount(count);
-      updateData({ peopleCount: count });
+  const handlePeopleCountChange = (newCount) => {
+    if (newCount >= 1 && newCount <= 10) {
+      setPeopleCount(newCount);
+      updateData({ peopleCount: newCount });
     }
   };
 
   const handleContinue = () => {
-    if (data.service && peopleCount >= 1) {
+    if (data.service) {
       onNext();
     }
   };
@@ -57,6 +57,10 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
       ? services
       : services.filter((service) => service.category === selectedCategory)
     : [];
+
+  const getTotalPrice = () => {
+    return data.service ? data.service.price * peopleCount : 0;
+  };
 
   if (loading) return <LoadingSpinner />;
 
@@ -69,49 +73,42 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
         <p className="text-gray-400">اختر من بين خدماتنا المتنوعة</p>
       </div>
 
-      {/* People Count Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-dark-700/50 rounded-lg p-6 mb-8"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h4 className="text-white font-semibold text-lg mb-2 flex items-center">
-              <Users className="w-5 h-5 ml-2" />
-              عدد الأشخاص
-            </h4>
-            <p className="text-gray-400 text-sm">كم شخص سيحتاج إلى الخدمة؟</p>
+      {/* People Count Selector */}
+      <div className="bg-dark-700/50 rounded-lg p-6 mb-8">
+        <h4 className="text-white font-semibold mb-4 flex items-center">
+          <Users className="w-5 h-5 ml-2" />
+          عدد الأشخاص
+        </h4>
+        <div className="flex items-center justify-center space-x-4 space-x-reverse">
+          <button
+            onClick={() => handlePeopleCountChange(peopleCount - 1)}
+            disabled={peopleCount <= 1}
+            className="w-10 h-10 rounded-full bg-primary-500 hover:bg-primary-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all"
+          >
+            <Minus className="w-4 h-4" />
+          </button>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">{peopleCount}</div>
+            <div className="text-gray-400 text-sm">
+              {peopleCount === 1 ? "شخص واحد" : `${peopleCount} أشخاص`}
+            </div>
           </div>
-          <div className="flex items-center space-x-4 space-x-reverse">
-            <button
-              onClick={() => handlePeopleCountChange(peopleCount - 1)}
-              disabled={peopleCount <= 1}
-              className="w-10 h-10 rounded-full bg-dark-600 hover:bg-dark-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all"
-            >
-              <Minus className="w-4 h-4" />
-            </button>
-            <span className="text-2xl font-bold text-white px-4 min-w-[60px] text-center">
-              {peopleCount}
-            </span>
-            <button
-              onClick={() => handlePeopleCountChange(peopleCount + 1)}
-              disabled={peopleCount >= 10}
-              className="w-10 h-10 rounded-full bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            onClick={() => handlePeopleCountChange(peopleCount + 1)}
+            disabled={peopleCount >= 10}
+            className="w-10 h-10 rounded-full bg-primary-500 hover:bg-primary-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
         </div>
         {peopleCount > 1 && (
           <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-            <p className="text-blue-400 text-sm">
-              سيتم حجز {peopleCount} مواعيد منفصلة لكل شخص
+            <p className="text-blue-400 text-sm text-center">
+              سيتم حساب السعر لكل شخص على حدة
             </p>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Category Filter */}
       <div className="flex flex-wrap gap-3 mb-8">
@@ -149,8 +146,15 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
               <h4 className="text-white font-semibold text-lg">
                 {service.nameAr}
               </h4>
-              <div className="text-primary-500 font-bold text-lg">
-                {service.price * peopleCount} شيكل
+              <div className="text-right">
+                <div className="text-primary-500 font-bold text-lg">
+                  {service.price} ريال
+                </div>
+                {peopleCount > 1 && (
+                  <div className="text-gray-400 text-sm">
+                    {service.price * peopleCount} ريال للجميع
+                  </div>
+                )}
               </div>
             </div>
 
@@ -171,12 +175,6 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
                 </div>
               )}
             </div>
-
-            {peopleCount > 1 && (
-              <div className="mt-3 text-xs text-gray-400">
-                {service.price} شيكل × {peopleCount} أشخاص
-              </div>
-            )}
           </motion.div>
         ))}
       </div>
@@ -187,13 +185,45 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
         </div>
       )}
 
+      {/* Selected Service Summary */}
+      {data.service && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-primary-500/10 border border-primary-500/30 rounded-lg p-4 mb-8"
+        >
+          <h4 className="text-primary-400 font-semibold mb-2">
+            الخدمة المختارة:
+          </h4>
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-white font-medium">{data.service.nameAr}</p>
+              <p className="text-gray-400 text-sm">
+                {data.service.duration} دقيقة • {peopleCount}{" "}
+                {peopleCount === 1 ? "شخص" : "أشخاص"}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-primary-500 font-bold text-xl">
+                {getTotalPrice()} ريال
+              </div>
+              {peopleCount > 1 && (
+                <div className="text-gray-400 text-sm">
+                  {data.service.price} × {peopleCount}
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Continue Button */}
       <div className="flex justify-end">
         <button
           onClick={handleContinue}
-          disabled={!data.service || peopleCount < 1}
+          disabled={!data.service}
           className={`px-8 py-3 rounded-lg font-semibold transition-all ${
-            data.service && peopleCount >= 1
+            data.service
               ? "bg-primary-500 hover:bg-primary-600 text-white"
               : "bg-gray-600 text-gray-400 cursor-not-allowed"
           }`}

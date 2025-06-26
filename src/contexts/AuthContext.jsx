@@ -52,8 +52,9 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       setUser(user);
 
+      console.log(user.role);
       toast.success("تم تسجيل الدخول بنجاح");
-      return { success: true };
+      return { success: true, role: user.role };
     } catch (error) {
       const message =
         error.response?.data?.message || "حدث خطأ في تسجيل الدخول";

@@ -23,7 +23,6 @@ import {
   Cell,
   Pie,
 } from "recharts";
-import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../lib/axios";

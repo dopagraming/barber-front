@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { format, addDays, isSameDay, isToday, isBefore } from "date-fns";
 import { ar } from "date-fns/locale";
-import axios from "axios";
+import LoadingSpinner from "../LoadingSpinner";
 import api from "../../lib/axios";
 
 const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
@@ -17,16 +17,20 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
     loadAvailableSchedule();
   }, []);
 
+  useEffect(() => {
+    if (selectedDate) {
+      loadTimeSlotsForDate();
+    }
+  }, [selectedDate]);
+
   const loadAvailableSchedule = async () => {
     try {
       const response = await api.get("api/time-management/available-schedule");
-      const { workingDays, timeSlots } = response.data;
-
-      setAvailableDays(workingDays);
-      setAvailableTimes(timeSlots.map((slot) => slot.time));
+      const { workingDays } = response.data;
+      setAvailableDays(workingDays.filter((day) => day.enabled));
     } catch (error) {
       console.error("Error loading schedule:", error);
-      // Fallback to default schedule
+      // Fallback to default days
       setAvailableDays([
         { dayId: "sunday", name: "الأحد", enabled: true },
         { dayId: "monday", name: "الاثنين", enabled: true },
@@ -34,6 +38,33 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         { dayId: "wednesday", name: "الأربعاء", enabled: true },
         { dayId: "thursday", name: "الخميس", enabled: true },
       ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTimeSlotsForDate = async () => {
+    if (!selectedDate) return;
+
+    const dayNames = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+    const dayName = dayNames[selectedDate.getDay()];
+
+    try {
+      const response = await api.get(
+        `api/time-management/time-slots/${dayName}`
+      );
+      setAvailableTimes(response.data.map((slot) => slot.time));
+    } catch (error) {
+      console.error("Error loading time slots:", error);
+      // Fallback to default times
       setAvailableTimes([
         "09:00",
         "09:30",
@@ -59,8 +90,6 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         "20:30",
         "21:00",
       ]);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -83,9 +112,9 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
       const date = addDays(today, i);
       const dayName = dayNames[date.getDay()];
 
-      if (availableDays.some((day) => day.dayId === dayName && day.enabled)) {
+      if (availableDays.some((day) => day.dayId === dayName)) {
         dates.push(date);
-        if (dates.length >= 30) break; // Stop when we have 30 working days
+        if (dates.length >= 14) break; // Stop when we have 14 working days
       }
     }
     return dates;
@@ -95,7 +124,8 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
 
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    updateData({ date });
+    setSelectedTime(null); // Reset time when date changes
+    updateData({ date, time: null });
   };
 
   const handleTimeSelect = (time) => {
@@ -119,14 +149,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
     return !isBefore(slotTime, now);
   };
 
-  if (loading) {
-    return (
-      <div className="bg-dark-800/50 rounded-2xl p-8 text-center">
-        <div className="w-12 h-12 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-400">جاري تحميل المواعيد المتاحة...</p>
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="bg-dark-800/50 rounded-2xl p-8">
@@ -152,7 +175,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
           </div>
           <div>
             <h4 className="text-white font-semibold mb-2">عدد الأشخاص:</h4>
-            <p className="text-gray-300">{data.peopleCount || 1} شخص</p>
+            <p className="text-gray-300">{data.peopleCount || 1}</p>
           </div>
         </div>
       </div>
@@ -198,30 +221,37 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
           <Clock className="w-5 h-5 ml-2" />
           اختر الوقت
         </h4>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-          {availableTimes?.map((time, index) => {
-            const isAvailable = isTimeSlotAvailable(time);
-            return (
-              <motion.button
-                key={time}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.02 }}
-                onClick={() => isAvailable && handleTimeSelect(time)}
-                disabled={!isAvailable}
-                className={`p-3 rounded-lg text-center transition-all ${
-                  selectedTime === time
-                    ? "bg-primary-500 text-white"
-                    : isAvailable
-                    ? "bg-dark-700 text-gray-300 hover:bg-dark-600"
-                    : "bg-dark-800 text-gray-600 cursor-not-allowed"
-                }`}
-              >
-                {time}
-              </motion.button>
-            );
-          })}
-        </div>
+        {availableTimes.length > 0 ? (
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+            {availableTimes?.map((time, index) => {
+              const isAvailable = isTimeSlotAvailable(time);
+              return (
+                <motion.button
+                  key={time}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.02 }}
+                  onClick={() => isAvailable && handleTimeSelect(time)}
+                  disabled={!isAvailable}
+                  className={`p-3 rounded-lg text-center transition-all ${
+                    selectedTime === time
+                      ? "bg-primary-500 text-white"
+                      : isAvailable
+                      ? "bg-dark-700 text-gray-300 hover:bg-dark-600"
+                      : "bg-dark-800 text-gray-600 cursor-not-allowed"
+                  }`}
+                >
+                  {time}
+                </motion.button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <Clock className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+            <p className="text-gray-400">لا توجد أوقات متاحة لهذا اليوم</p>
+          </div>
+        )}
       </div>
 
       {/* Selected DateTime Display */}
@@ -238,11 +268,6 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
             {format(selectedDate, "EEEE، d MMMM yyyy", { locale: ar })} في{" "}
             {selectedTime}
           </p>
-          {data.peopleCount > 1 && (
-            <p className="text-primary-300 text-sm mt-2">
-              سيتم حجز {data.peopleCount} مواعيد في نفس التوقيت
-            </p>
-          )}
         </motion.div>
       )}
 

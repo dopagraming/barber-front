@@ -28,7 +28,6 @@ import {
   AreaChart,
   Area,
 } from "recharts";
-import axios from "axios";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import api from "../../lib/axios";
 

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ServiceSelection from "../components/booking/ServiceSelection";
 import BarberSelection from "../components/booking/BarberSelection";
 import DateTimeSelection from "../components/booking/DateTimeSelection";
+import RepeatOptions from "../components/booking/RepeatOptions";
 import BookingConfirmation from "../components/booking/BookingConfirmation";
 import BookingSuccess from "../components/booking/BookingSuccess";
 
@@ -13,7 +14,16 @@ const BookingSystem = () => {
     barber: null,
     date: null,
     time: null,
+    peopleCount: 1,
     notes: "",
+    isRepeating: false,
+    repeatConfig: {
+      interval: 1,
+      unit: "week",
+      occurrences: 4,
+    },
+    totalAppointments: 1,
+    totalCost: 0,
   });
 
   const updateBookingData = (data) => {
@@ -36,8 +46,9 @@ const BookingSystem = () => {
     { number: 1, title: "اختيار الخدمة", component: ServiceSelection },
     { number: 2, title: "اختيار الحلاق", component: BarberSelection },
     { number: 3, title: "التاريخ والوقت", component: DateTimeSelection },
-    { number: 4, title: "تأكيد الحجز", component: BookingConfirmation },
-    { number: 5, title: "تم الحجز", component: BookingSuccess },
+    { number: 4, title: "خيارات التكرار", component: RepeatOptions },
+    { number: 5, title: "تأكيد الحجز", component: BookingConfirmation },
+    { number: 6, title: "تم الحجز", component: BookingSuccess },
   ];
 
   const CurrentStepComponent = steps[currentStep - 1]?.component;
@@ -46,40 +57,42 @@ const BookingSystem = () => {
     <div className="min-h-screen py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Progress Bar */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-4">
-            {steps.slice(0, 4).map((step, index) => (
-              <div key={step.number} className="flex items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
-                    currentStep >= step.number
-                      ? "bg-primary-500 text-white"
-                      : "bg-dark-700 text-gray-400"
-                  }`}
-                >
-                  {step.number}
-                </div>
-                {index < 3 && (
+        {currentStep < 6 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-4">
+              {steps.slice(0, 5).map((step, index) => (
+                <div key={step.number} className="flex items-center">
                   <div
-                    className={`h-1 w-16 mx-2 transition-all ${
-                      currentStep > step.number
-                        ? "bg-primary-500"
-                        : "bg-dark-700"
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
+                      currentStep >= step.number
+                        ? "bg-primary-500 text-white"
+                        : "bg-dark-700 text-gray-400"
                     }`}
-                  />
-                )}
-              </div>
-            ))}
+                  >
+                    {step.number}
+                  </div>
+                  {index < 4 && (
+                    <div
+                      className={`h-1 w-16 mx-2 transition-all ${
+                        currentStep > step.number
+                          ? "bg-primary-500"
+                          : "bg-dark-700"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {steps[currentStep - 1]?.title}
+              </h2>
+              <p className="text-gray-400">
+                الخطوة {currentStep} من {steps.length - 1}
+              </p>
+            </div>
           </div>
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">
-              {steps[currentStep - 1]?.title}
-            </h2>
-            <p className="text-gray-400">
-              الخطوة {currentStep} من {steps.length - 1}
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* Step Content */}
         <AnimatePresence mode="wait">

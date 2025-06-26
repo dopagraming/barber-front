@@ -16,7 +16,6 @@ import { useAuth } from "../contexts/AuthContext";
 const Home = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
-
   return (
     <div className="min-h-screen ">
       {/* CTA Section */}
