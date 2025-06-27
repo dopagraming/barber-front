@@ -9,6 +9,11 @@ import {
   Calendar,
   Eye,
   MoreVertical,
+  Trash2,
+  Ban,
+  CheckCircle,
+  AlertTriangle,
+  Plus,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -23,6 +28,19 @@ const DashboardCustomers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [customerToBlock, setCustomerToBlock] = useState(null);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+
+  const [newUserData, setNewUserData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    role: "customer",
+  });
 
   useEffect(() => {
     fetchCustomers();
@@ -82,11 +100,88 @@ const DashboardCustomers = () => {
     setShowModal(true);
   };
 
+  const handleNewUserChange = (e) => {
+    const { name, value } = e.target;
+    setNewUserData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddUserSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await api.post("api/auth/register/", newUserData);
+      toast.success("تم إضافة العميل الجديد بنجاح");
+      setShowAddUserModal(false);
+      setNewUserData({
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        role: "customer",
+      });
+      // TODO: Refresh customer list here (call your fetch function)
+    } catch (error) {
+      console.error("Error adding new user:", error);
+      toast.error("حدث خطأ أثناء إضافة العميل");
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+
+    try {
+      await api.delete(`api/customers/${customerToDelete._id}`);
+      setCustomers((prev) =>
+        prev.filter((c) => c._id !== customerToDelete._id)
+      );
+      toast.success("تم حذف العميل بنجاح");
+      setShowDeleteModal(false);
+      setCustomerToDelete(null);
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      toast.error("حدث خطأ في حذف العميل");
+    }
+  };
+
+  const handleBlockCustomer = async () => {
+    if (!customerToBlock) return;
+
+    try {
+      const response = await api.patch(
+        `api/customers/${customerToBlock._id}/block`,
+        {
+          isActive: !customerToBlock.isActive,
+        }
+      );
+
+      setCustomers((prev) =>
+        prev.map((c) => (c._id === customerToBlock._id ? response.data : c))
+      );
+
+      const action = customerToBlock.isActive ? "حظر" : "إلغاء حظر";
+      toast.success(`تم ${action} العميل بنجاح`);
+      setShowBlockModal(false);
+      setCustomerToBlock(null);
+    } catch (error) {
+      console.error("Error blocking customer:", error);
+      toast.error("حدث خطأ في تحديث حالة العميل");
+    }
+  };
+
+  const openDeleteModal = (customer) => {
+    setCustomerToDelete(customer);
+    setShowDeleteModal(true);
+  };
+
+  const openBlockModal = (customer) => {
+    setCustomerToBlock(customer);
+    setShowBlockModal(true);
+  };
+
   const filteredCustomers = customers.filter((customer) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      customer.firstName?.toLowerCase().includes(searchLower) ||
-      customer.lastName?.toLowerCase().includes(searchLower) ||
+      customer.name?.toLowerCase().includes(searchLower) ||
       customer.email?.toLowerCase().includes(searchLower) ||
       customer.phone?.includes(searchTerm)
     );
@@ -140,7 +235,7 @@ const DashboardCustomers = () => {
                   {customers.filter((c) => c.isActive).length}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-green-500" />
+              <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
           </motion.div>
 
@@ -152,21 +247,12 @@ const DashboardCustomers = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">عملاء جدد هذا الشهر</p>
+                <p className="text-gray-400 text-sm">عملاء محظورين</p>
                 <p className="text-white text-2xl font-bold">
-                  {
-                    customers.filter((c) => {
-                      const createdDate = new Date(c.createdAt);
-                      const now = new Date();
-                      return (
-                        createdDate.getMonth() === now.getMonth() &&
-                        createdDate.getFullYear() === now.getFullYear()
-                      );
-                    }).length
-                  }
+                  {customers.filter((c) => !c.isActive).length}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-primary-500" />
+              <Ban className="w-8 h-8 text-red-500" />
             </div>
           </motion.div>
 
@@ -208,8 +294,96 @@ const DashboardCustomers = () => {
                 className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
               />
             </div>
+            <button
+              onClick={() => setShowAddUserModal(true)}
+              className="mb-6 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              إضافة عميل جديد
+            </button>
           </div>
         </motion.div>
+
+        {showAddUserModal && (
+          <motion.div
+            initial={{ opacity: 0, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.1 }}
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+            onClick={() => setShowAddUserModal(false)}
+          >
+            <div
+              className="bg-dark-700 p-6 rounded-lg w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-white text-xl font-bold mb-4">
+                إضافة عميل جديد
+              </h2>
+              <form onSubmit={handleAddUserSubmit} className="space-y-4">
+                <input
+                  name="name"
+                  value={newUserData.name}
+                  onChange={handleNewUserChange}
+                  placeholder="الاسم الأول"
+                  required
+                  className="w-full px-3 py-2 rounded bg-dark-600 text-white border border-dark-500 focus:outline-none focus:border-primary-500"
+                />
+                <input
+                  name="lastName"
+                  value={newUserData.lastName}
+                  onChange={handleNewUserChange}
+                  placeholder="اسم العائلة"
+                  required
+                  className="w-full px-3 py-2 rounded bg-dark-600 text-white border border-dark-500 focus:outline-none focus:border-primary-500"
+                />
+                <input
+                  name="email"
+                  type="email"
+                  value={newUserData.email}
+                  onChange={handleNewUserChange}
+                  placeholder="البريد الإلكتروني"
+                  required
+                  className="w-full px-3 py-2 rounded bg-dark-600 text-white border border-dark-500 focus:outline-none focus:border-primary-500"
+                />
+                <input
+                  name="phone"
+                  value={newUserData.phone}
+                  onChange={handleNewUserChange}
+                  placeholder="رقم الهاتف"
+                  required
+                  className="w-full px-3 py-2 rounded bg-dark-600 text-white border border-dark-500 focus:outline-none focus:border-primary-500"
+                />
+                <input
+                  name="password"
+                  type="password"
+                  value={newUserData.password}
+                  onChange={handleNewUserChange}
+                  placeholder="كلمة المرور"
+                  required
+                  className="w-full px-3 py-2 rounded bg-dark-600 text-white border border-dark-500 focus:outline-none focus:border-primary-500"
+                />
+                {/* Optional: role field hidden or selectable */}
+                <input type="hidden" name="role" value={newUserData.role} />
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddUserModal(false)}
+                    className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded bg-primary-500 hover:bg-primary-600 text-white"
+                  >
+                    حفظ
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
 
         {/* Customers Table */}
         <motion.div
@@ -257,12 +431,12 @@ const DashboardCustomers = () => {
                         <div className="flex items-center space-x-3 space-x-reverse">
                           <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
                             <span className="text-white font-medium">
-                              {customer.firstName?.charAt(0)}
+                              {customer.name?.charAt(0)}
                             </span>
                           </div>
                           <div>
                             <p className="text-white font-medium">
-                              {customer.firstName} {customer.lastName}
+                              {customer.name}
                             </p>
                             <p className="text-gray-400 text-sm">
                               انضم في{" "}
@@ -293,7 +467,7 @@ const DashboardCustomers = () => {
                             {stats.totalAppointments} موعد
                           </p>
                           <p className="text-gray-400">
-                            {stats.totalSpent} شيكل إجمالي
+                            {stats.totalSpent} ريال إجمالي
                           </p>
                         </div>
                       </td>
@@ -314,7 +488,7 @@ const DashboardCustomers = () => {
                               : "bg-red-400/10 text-red-400"
                           }`}
                         >
-                          {customer.isActive ? "نشط" : "معطل"}
+                          {customer.isActive ? "نشط" : "محظور"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -322,11 +496,35 @@ const DashboardCustomers = () => {
                           <button
                             onClick={() => viewCustomerDetails(customer)}
                             className="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-blue-400/10 transition-all"
+                            title="عرض التفاصيل"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button className="text-gray-400 hover:text-gray-300 p-2 rounded-lg hover:bg-gray-400/10 transition-all">
-                            <MoreVertical className="w-4 h-4" />
+                          <button
+                            onClick={() => openBlockModal(customer)}
+                            className={`p-2 rounded-lg transition-all ${
+                              customer.isActive
+                                ? "text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10"
+                                : "text-green-400 hover:text-green-300 hover:bg-green-400/10"
+                            }`}
+                            title={
+                              customer.isActive
+                                ? "حظر العميل"
+                                : "إلغاء حظر العميل"
+                            }
+                          >
+                            {customer.isActive ? (
+                              <Ban className="w-4 h-4" />
+                            ) : (
+                              <CheckCircle className="w-4 h-4" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(customer)}
+                            className="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-400/10 transition-all"
+                            title="حذف العميل"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -375,11 +573,11 @@ const DashboardCustomers = () => {
                     <div className="text-center mb-6">
                       <div className="w-20 h-20 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-white text-2xl font-bold">
-                          {selectedCustomer.firstName?.charAt(0)}
+                          {selectedCustomer.name?.charAt(0)}
                         </span>
                       </div>
                       <h3 className="text-white font-semibold text-xl">
-                        {selectedCustomer.firstName} {selectedCustomer.lastName}
+                        {selectedCustomer.name}
                       </h3>
                       <p className="text-gray-400">
                         عضو منذ{" "}
@@ -389,6 +587,15 @@ const DashboardCustomers = () => {
                           { locale: ar }
                         )}
                       </p>
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 ${
+                          selectedCustomer.isActive
+                            ? "bg-green-400/10 text-green-400"
+                            : "bg-red-400/10 text-red-400"
+                        }`}
+                      >
+                        {selectedCustomer.isActive ? "نشط" : "محظور"}
+                      </span>
                     </div>
 
                     <div className="space-y-4">
@@ -431,7 +638,7 @@ const DashboardCustomers = () => {
                                 إجمالي الإنفاق
                               </span>
                               <span className="text-primary-500 font-semibold">
-                                {stats.totalSpent} شيكل
+                                {stats.totalSpent} ريال
                               </span>
                             </div>
                           </div>
@@ -460,12 +667,11 @@ const DashboardCustomers = () => {
                                   {appointment.service?.nameAr}
                                 </h5>
                                 <p className="text-gray-400 text-sm">
-                                  مع {appointment.barber?.firstName}{" "}
-                                  {appointment.barber?.lastName}
+                                  مع {appointment.barber?.name}{" "}
                                 </p>
                               </div>
                               <span className="text-primary-500 font-semibold">
-                                {appointment.totalPrice} شيكل
+                                {appointment.totalPrice} ريال
                               </span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
@@ -506,6 +712,97 @@ const DashboardCustomers = () => {
                       )}
                     </div>
                   </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && customerToDelete && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-dark-800 rounded-lg p-6 w-full max-w-md"
+            >
+              <div className="text-center">
+                <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">
+                  تأكيد الحذف
+                </h3>
+                <p className="text-gray-400 mb-6">
+                  هل أنت متأكد من حذف العميل "{customerToDelete.name}{" "}
+                  {customerToDelete.lastName}"؟
+                  <br />
+                  <span className="text-red-400 text-sm">
+                    هذا الإجراء لا يمكن التراجع عنه وسيتم إلغاء جميع مواعيده
+                  </span>
+                </p>
+                <div className="flex justify-center space-x-4 space-x-reverse">
+                  <button
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setCustomerToDelete(null);
+                    }}
+                    className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-600 transition-all"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    onClick={handleDeleteCustomer}
+                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all"
+                  >
+                    حذف العميل
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Block/Unblock Confirmation Modal */}
+        {showBlockModal && customerToBlock && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-dark-800 rounded-lg p-6 w-full max-w-md"
+            >
+              <div className="text-center">
+                {customerToBlock.isActive ? (
+                  <Ban className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
+                ) : (
+                  <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+                )}
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {customerToBlock.isActive ? "حظر العميل" : "إلغاء حظر العميل"}
+                </h3>
+                <p className="text-gray-400 mb-6">
+                  {customerToBlock.isActive
+                    ? `هل أنت متأكد من حظر العميل "${customerToBlock.name}"؟ لن يتمكن من حجز مواعيد جديدة.`
+                    : `هل أنت متأكد من إلغاء حظر العميل "${customerToBlock.name}"؟ سيتمكن من حجز مواعيد جديدة.`}
+                </p>
+                <div className="flex justify-center space-x-4 space-x-reverse">
+                  <button
+                    onClick={() => {
+                      setShowBlockModal(false);
+                      setCustomerToBlock(null);
+                    }}
+                    className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-600 transition-all"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    onClick={handleBlockCustomer}
+                    className={`px-6 py-3 rounded-lg transition-all ${
+                      customerToBlock.isActive
+                        ? "bg-yellow-500 hover:bg-yellow-600 text-white"
+                        : "bg-green-500 hover:bg-green-600 text-white"
+                    }`}
+                  >
+                    {customerToBlock.isActive ? "حظر العميل" : "إلغاء الحظر"}
+                  </button>
                 </div>
               </div>
             </motion.div>

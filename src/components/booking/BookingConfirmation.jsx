@@ -59,7 +59,6 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
     try {
       const appointmentData = {
         service: data.service._id,
-        barber: data.barber._id,
         date: data.date,
         time: data.time,
         notes: notes,
@@ -126,7 +125,7 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
             </div>
             <div className="flex-1">
               <h5 className="text-white font-medium">
-                {data.barber?.firstName} {data.barber?.lastName}
+                {data.barber?.name}
               </h5>
               <p className="text-gray-400 text-sm">حلاق محترف</p>
             </div>

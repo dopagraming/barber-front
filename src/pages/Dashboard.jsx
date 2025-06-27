@@ -29,25 +29,27 @@ import api from "../lib/axios";
 
 const Dashboard = () => {
   const [analytics, setAnalytics] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
+  // if you wanna to fetch Analytics from database use this function fetchAnalytics
 
-  const fetchAnalytics = async () => {
-    try {
-      const response = await api.get("api/analytics/dashboard");
-      setAnalytics(response.data);
-    } catch (error) {
-      console.error("Error fetching analytics:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // useEffect(() => {
+  //   fetchAnalytics();
+  // }, []);
 
-  if (loading) return <LoadingSpinner />;
+  // const fetchAnalytics = async () => {
+  //   try {
+  //     const response = await api.get("api/analytics/dashboard");
+  //     setAnalytics(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching analytics:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // if (loading) return <LoadingSpinner />;
 
   const stats = [
     {
@@ -90,12 +92,12 @@ const Dashboard = () => {
     { month: "يونيو", appointments: 67, revenue: 3350 },
   ];
 
-  const serviceData =
-    analytics?.popularServices?.map((service, index) => ({
-      name: service.service.nameAr,
-      value: service.count,
-      color: ["#f59332", "#e35d05", "#bc4508", "#95370e", "#782f0f"][index],
-    })) || [];
+  // const serviceData =
+  //   analytics?.popularServices?.map((service, index) => ({
+  //     name: service.service.nameAr,
+  //     value: service.count,
+  //     color: ["#f59332", "#e35d05", "#bc4508", "#95370e", "#782f0f"][index],
+  //   })) || [];
 
   return (
     <div className="min-h-screen py-20">
@@ -109,7 +111,7 @@ const Dashboard = () => {
         >
           <h1 className="text-3xl font-bold text-white mb-2">لوحة التحكم</h1>
           <p className="text-gray-400">
-            مرحباً {user?.firstName}، إليك نظرة عامة على أداء الصالون
+            مرحباً {user?.name}، إليك نظرة عامة على أداء الصالون
           </p>
         </motion.div>
 
@@ -139,9 +141,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Monthly Performance */}
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -175,7 +175,6 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </motion.div>
 
-          {/* Popular Services */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -214,7 +213,7 @@ const Dashboard = () => {
               </div>
             )}
           </motion.div>
-        </div>
+        </div> */}
 
         {/* Quick Actions */}
         <motion.div

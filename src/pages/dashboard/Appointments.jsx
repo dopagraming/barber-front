@@ -168,14 +168,11 @@ const DashboardAppointments = () => {
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesFilter = filter === "all" || appointment.status === filter;
     const matchesSearch =
-      appointment.customer?.firstName
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      appointment.customer?.lastName
+      appointment.customer?.name
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       appointment.service?.nameAr?.includes(searchTerm) ||
-      appointment.barber?.firstName
+      appointment.barber?.name
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase());
 
@@ -276,18 +273,16 @@ const DashboardAppointments = () => {
                   <div className="flex items-center space-x-4 space-x-reverse">
                     <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold">
-                        {appointment.customer?.firstName?.charAt(0)}
+                        {appointment.customer?.name?.charAt(0)}
                       </span>
                     </div>
                     <div>
                       <h3 className="text-white font-semibold text-lg">
-                        {appointment.customer?.firstName}{" "}
-                        {appointment.customer?.lastName}
+                        {appointment.customer?.name}{" "}
                       </h3>
                       <p className="text-gray-400 text-sm">
                         {appointment.service?.nameAr} -{" "}
-                        {appointment.barber?.firstName}{" "}
-                        {appointment.barber?.lastName}
+                        {appointment.barber?.name}{" "}
                       </p>
                     </div>
                   </div>
@@ -440,7 +435,7 @@ const DashboardAppointments = () => {
                       <option value="">اختر العميل</option>
                       {customers.map((customer) => (
                         <option key={customer._id} value={customer._id}>
-                          {customer.firstName} {customer.lastName}
+                          {customer.name}
                         </option>
                       ))}
                     </select>
@@ -464,7 +459,7 @@ const DashboardAppointments = () => {
                       <option value="">اختر الحلاق</option>
                       {barbers.map((barber) => (
                         <option key={barber._id} value={barber._id}>
-                          {barber.firstName} {barber.lastName}
+                          {barber.name}
                         </option>
                       ))}
                     </select>

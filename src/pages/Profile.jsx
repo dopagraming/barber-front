@@ -34,8 +34,7 @@ const Profile = () => {
   const { user, setUser } = useAuth();
 
   const [profileData, setProfileData] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
+    name: user?.name || "",
     phone: user?.phone || "",
     avatar: user?.avatar || "",
     preferences: user?.preferences || {
@@ -190,18 +189,18 @@ const Profile = () => {
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
-                    alt={user.firstName}
+                    alt={user.name}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
                   <span className="text-white text-2xl font-bold">
-                    {user?.firstName?.charAt(0)}
+                    {user?.name?.charAt(0)}
                   </span>
                 )}
               </div>
               <div className="flex-1">
                 <h1 className="text-3xl font-bold text-white mb-2">
-                  {user?.firstName} {user?.lastName}
+                  {user?.name}
                 </h1>
                 <div className="flex items-center space-x-4 space-x-reverse text-gray-400">
                   <div className="flex items-center">
@@ -318,31 +317,15 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-white font-medium mb-2">
-                    الاسم الأول
+                    الاسم{" "}
                   </label>
                   <input
                     type="text"
-                    value={profileData.firstName}
+                    value={profileData.name}
                     onChange={(e) =>
                       setProfileData({
                         ...profileData,
-                        firstName: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-white font-medium mb-2">
-                    الاسم الأخير
-                  </label>
-                  <input
-                    type="text"
-                    value={profileData.lastName}
-                    onChange={(e) =>
-                      setProfileData({
-                        ...profileData,
-                        lastName: e.target.value,
+                        name: e.target.value,
                       })
                     }
                     className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
@@ -616,10 +599,6 @@ const Profile = () => {
                               <h3 className="text-white font-semibold text-lg">
                                 {appointment.service?.nameAr}
                               </h3>
-                              <p className="text-gray-400">
-                                مع {appointment.barber?.firstName}{" "}
-                                {appointment.barber?.lastName}
-                              </p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-3 space-x-reverse">
@@ -712,8 +691,7 @@ const Profile = () => {
                                 {appointment.service?.nameAr}
                               </h3>
                               <p className="text-gray-400">
-                                مع {appointment.barber?.firstName}{" "}
-                                {appointment.barber?.lastName}
+                                مع {appointment.barber?.name}{" "}
                               </p>
                             </div>
                           </div>

@@ -88,7 +88,7 @@ const BarberSelection = ({ data, updateData, onNext, onPrev }) => {
               </div>
               <div>
                 <h4 className="text-white font-semibold text-lg">
-                  {barber.firstName} {barber.lastName}
+                  {barber.name}
                 </h4>
                 <p className="text-gray-400 text-sm">حلاق محترف</p>
               </div>

@@ -11,9 +11,8 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
-  const { loginWithGoogle } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -30,7 +29,6 @@ const Login = () => {
     console.log(result);
     if (result.success) {
       if (result.role == "admin") {
-        console.log("good");
         navigate("/dashboard");
       } else navigate("/");
     }
@@ -40,7 +38,13 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     const result = await loginWithGoogle();
-    if (result.success) navigate("/");
+    if (result.success) {
+      if (result.success) {
+        if (result.role == "admin") {
+          navigate("/dashboard");
+        } else navigate("/");
+      }
+    }
     setLoading(false);
   };
 

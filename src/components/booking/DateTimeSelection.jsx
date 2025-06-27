@@ -14,117 +14,61 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadAvailableSchedule();
+    fetchSchedule();
   }, []);
 
   useEffect(() => {
-    if (selectedDate) {
-      loadTimeSlotsForDate();
-    }
+    if (selectedDate) fetchSlotsForDate(selectedDate);
   }, [selectedDate]);
 
-  const loadAvailableSchedule = async () => {
+  const fetchSchedule = async () => {
     try {
-      const response = await api.get("api/time-management/available-schedule");
+      const response = await api.get("api/time-management/settings");
       const { workingDays } = response.data;
       setAvailableDays(workingDays.filter((day) => day.enabled));
-    } catch (error) {
-      console.error("Error loading schedule:", error);
-      // Fallback to default days
-      setAvailableDays([
-        { dayId: "sunday", name: "الأحد", enabled: true },
-        { dayId: "monday", name: "الاثنين", enabled: true },
-        { dayId: "tuesday", name: "الثلاثاء", enabled: true },
-        { dayId: "wednesday", name: "الأربعاء", enabled: true },
-        { dayId: "thursday", name: "الخميس", enabled: true },
-      ]);
+    } catch (err) {
+      console.error("Failed to load schedule:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadTimeSlotsForDate = async () => {
-    if (!selectedDate) return;
-
-    const dayNames = [
-      "sunday",
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-    ];
-    const dayName = dayNames[selectedDate.getDay()];
-
+  const fetchSlotsForDate = async (date) => {
     try {
-      const response = await api.get(
-        `api/time-management/time-slots/${dayName}`
-      );
-      setAvailableTimes(response.data.map((slot) => slot.time));
-    } catch (error) {
-      console.error("Error loading time slots:", error);
-      // Fallback to default times
-      setAvailableTimes([
-        "09:00",
-        "09:30",
-        "10:00",
-        "10:30",
-        "11:00",
-        "11:30",
-        "12:00",
-        "12:30",
-        "14:00",
-        "14:30",
-        "15:00",
-        "15:30",
-        "16:00",
-        "16:30",
-        "17:00",
-        "17:30",
-        "18:00",
-        "18:30",
-        "19:00",
-        "19:30",
-        "20:00",
-        "20:30",
-        "21:00",
-      ]);
+      const formatted = date.toISOString().split("T")[0];
+      const response = await api.get(`api/time-management/slots/${formatted}`);
+      const times = response.data
+        .filter((slot) => slot.available)
+        .map((s) => s.time);
+      setAvailableTimes(times);
+    } catch (err) {
+      console.error("Failed to load time slots:", err);
+      setAvailableTimes([]);
     }
   };
 
-  // Generate next 30 days, filtering by available working days
   const generateDates = () => {
-    const dates = [];
     const today = new Date();
-    const dayNames = [
-      "sunday",
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-    ];
+    const results = [];
+    const allowed = new Set(availableDays.map((d) => d.id));
 
     for (let i = 0; i < 60; i++) {
-      // Check 60 days to get enough working days
       const date = addDays(today, i);
-      const dayName = dayNames[date.getDay()];
-
-      if (availableDays.some((day) => day.dayId === dayName)) {
-        dates.push(date);
-        if (dates.length >= 14) break; // Stop when we have 14 working days
-      }
+      const dayName = date
+        .toLocaleDateString("en-US", { weekday: "long" })
+        .toLowerCase();
+      if (allowed.has(dayName)) results.push(date);
+      if (results.length >= 14) break;
     }
-    return dates;
+
+    return results;
   };
 
   const dates = generateDates();
 
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    setSelectedTime(null); // Reset time when date changes
+    setSelectedTime(null);
     updateData({ date, time: null });
   };
 
@@ -133,20 +77,12 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
     updateData({ time });
   };
 
-  const handleContinue = () => {
-    if (selectedDate && selectedTime) {
-      onNext();
-    }
-  };
-
   const isTimeSlotAvailable = (time) => {
-    // Mock availability check - in real app, check against existing appointments
     const now = new Date();
-    const [hours, minutes] = time.split(":");
-    const slotTime = new Date(selectedDate);
-    slotTime.setHours(parseInt(hours), parseInt(minutes));
-
-    return !isBefore(slotTime, now);
+    const [h, m] = time.split(":");
+    const slot = new Date(selectedDate);
+    slot.setHours(+h, +m, 0);
+    return !isBefore(slot, now);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -160,18 +96,12 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         <p className="text-gray-400">حدد الموعد المناسب لك</p>
       </div>
 
-      {/* Selected Service & Barber Info */}
+      {/* Summary */}
       <div className="bg-dark-700/50 rounded-lg p-4 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <h4 className="text-white font-semibold mb-2">الخدمة:</h4>
             <p className="text-gray-300">{data.service?.nameAr}</p>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-2">الحلاق:</h4>
-            <p className="text-gray-300">
-              {data.barber?.firstName} {data.barber?.lastName}
-            </p>
           </div>
           <div>
             <h4 className="text-white font-semibold mb-2">عدد الأشخاص:</h4>
@@ -183,16 +113,15 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
       {/* Date Selection */}
       <div className="mb-8">
         <h4 className="text-white font-semibold mb-4 flex items-center">
-          <Calendar className="w-5 h-5 ml-2" />
-          اختر التاريخ
+          <Calendar className="w-5 h-5 ml-2" /> اختر التاريخ
         </h4>
         <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
-          {dates?.map((date, index) => (
+          {dates.map((date, i) => (
             <motion.button
-              key={index}
+              key={i}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+              transition={{ duration: 0.3, delay: i * 0.03 }}
               onClick={() => handleDateSelect(date)}
               className={`p-3 rounded-lg text-center transition-all ${
                 isSameDay(selectedDate, date)
@@ -218,25 +147,24 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
       {/* Time Selection */}
       <div className="mb-8">
         <h4 className="text-white font-semibold mb-4 flex items-center">
-          <Clock className="w-5 h-5 ml-2" />
-          اختر الوقت
+          <Clock className="w-5 h-5 ml-2" /> اختر الوقت
         </h4>
         {availableTimes.length > 0 ? (
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-            {availableTimes?.map((time, index) => {
-              const isAvailable = isTimeSlotAvailable(time);
+            {availableTimes.map((time, i) => {
+              const available = isTimeSlotAvailable(time);
               return (
                 <motion.button
                   key={time}
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: index * 0.02 }}
-                  onClick={() => isAvailable && handleTimeSelect(time)}
-                  disabled={!isAvailable}
+                  transition={{ duration: 0.2, delay: i * 0.02 }}
+                  onClick={() => available && handleTimeSelect(time)}
+                  disabled={!available}
                   className={`p-3 rounded-lg text-center transition-all ${
                     selectedTime === time
                       ? "bg-primary-500 text-white"
-                      : isAvailable
+                      : available
                       ? "bg-dark-700 text-gray-300 hover:bg-dark-600"
                       : "bg-dark-800 text-gray-600 cursor-not-allowed"
                   }`}
@@ -254,7 +182,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         )}
       </div>
 
-      {/* Selected DateTime Display */}
+      {/* Selected DateTime */}
       {selectedDate && selectedTime && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -271,18 +199,16 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         </motion.div>
       )}
 
-      {/* Navigation Buttons */}
+      {/* Buttons */}
       <div className="flex justify-between">
         <button
           onClick={onPrev}
           className="flex items-center px-6 py-3 text-gray-400 hover:text-white transition-colors"
         >
-          <ArrowRight className="w-4 h-4 ml-2" />
-          السابق
+          <ArrowRight className="w-4 h-4 ml-2" /> السابق
         </button>
-
         <button
-          onClick={handleContinue}
+          onClick={() => selectedDate && selectedTime && onNext()}
           disabled={!selectedDate || !selectedTime}
           className={`px-8 py-3 rounded-lg font-semibold transition-all ${
             selectedDate && selectedTime

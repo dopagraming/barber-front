@@ -30,6 +30,8 @@ const Navbar = () => {
     setShowUserMenu(false);
   };
 
+  console.log(user);
+
   const isActive = (path) => location.pathname === path;
 
   const languages = [
@@ -111,11 +113,11 @@ const Navbar = () => {
                       />
                     ) : (
                       <span className="text-white text-sm font-medium">
-                        {user.firstName?.charAt(0)}
+                        {user.name?.charAt(0)}
                       </span>
                     )}
                   </div>
-                  <span className="text-white text-sm">{user.firstName}</span>
+                  <span className="text-white text-sm">{user.name}</span>
                 </button>
 
                 <AnimatePresence>

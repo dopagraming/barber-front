@@ -44,11 +44,11 @@ const BookingSystem = () => {
 
   const steps = [
     { number: 1, title: "اختيار الخدمة", component: ServiceSelection },
-    { number: 2, title: "اختيار الحلاق", component: BarberSelection },
-    { number: 3, title: "التاريخ والوقت", component: DateTimeSelection },
-    { number: 4, title: "خيارات التكرار", component: RepeatOptions },
-    { number: 5, title: "تأكيد الحجز", component: BookingConfirmation },
-    { number: 6, title: "تم الحجز", component: BookingSuccess },
+    // { number: 2, title: "اختيار الحلاق", component: BarberSelection },
+    { number: 2, title: "التاريخ والوقت", component: DateTimeSelection },
+    { number: 3, title: "خيارات التكرار", component: RepeatOptions },
+    { number: 4, title: "تأكيد الحجز", component: BookingConfirmation },
+    { number: 5, title: "تم الحجز", component: BookingSuccess },
   ];
 
   const CurrentStepComponent = steps[currentStep - 1]?.component;

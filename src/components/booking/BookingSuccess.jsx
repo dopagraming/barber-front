@@ -1,8 +1,16 @@
-import { motion } from 'framer-motion';
-import { CheckCircle, Calendar, Clock, User, Scissors, Home, MessageCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { motion } from "framer-motion";
+import {
+  CheckCircle,
+  Calendar,
+  Clock,
+  User,
+  Scissors,
+  Home,
+  MessageCircle,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
 const BookingSuccess = ({ data }) => {
   return (
@@ -17,7 +25,9 @@ const BookingSuccess = ({ data }) => {
         <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-12 h-12 text-white" />
         </div>
-        <h2 className="text-3xl font-bold text-white mb-2">تم حجز موعدك بنجاح!</h2>
+        <h2 className="text-3xl font-bold text-white mb-2">
+          تم حجز موعدك بنجاح!
+        </h2>
         <p className="text-gray-400 text-lg">
           شكراً لك، سنراك قريباً في صالوننا
         </p>
@@ -31,7 +41,7 @@ const BookingSuccess = ({ data }) => {
         className="bg-dark-700/50 rounded-lg p-6 mb-8"
       >
         <h3 className="text-white font-semibold text-lg mb-6">تفاصيل موعدك</h3>
-        
+
         <div className="space-y-4 text-right">
           {/* Service */}
           <div className="flex items-center justify-between">
@@ -39,17 +49,8 @@ const BookingSuccess = ({ data }) => {
               <Scissors className="w-5 h-5 text-primary-500" />
               <span className="text-gray-300">الخدمة:</span>
             </div>
-            <span className="text-white font-medium">{data.service?.nameAr}</span>
-          </div>
-
-          {/* Barber */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 space-x-reverse">
-              <User className="w-5 h-5 text-primary-500" />
-              <span className="text-gray-300">الحلاق:</span>
-            </div>
             <span className="text-white font-medium">
-              {data.barber?.firstName} {data.barber?.lastName}
+              {data.service?.nameAr}
             </span>
           </div>
 
@@ -60,7 +61,7 @@ const BookingSuccess = ({ data }) => {
               <span className="text-gray-300">التاريخ:</span>
             </div>
             <span className="text-white font-medium">
-              {format(data.date, 'EEEE، d MMMM yyyy', { locale: ar })}
+              {format(data.date, "EEEE، d MMMM yyyy", { locale: ar })}
             </span>
           </div>
 
@@ -131,7 +132,7 @@ const BookingSuccess = ({ data }) => {
           <Home className="w-5 h-5 ml-2" />
           العودة للرئيسية
         </Link>
-        
+
         <Link
           to="/profile"
           className="border border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white px-8 py-3 rounded-lg font-semibold transition-all flex items-center justify-center"
@@ -139,7 +140,7 @@ const BookingSuccess = ({ data }) => {
           <Calendar className="w-5 h-5 ml-2" />
           مواعيدي
         </Link>
-        
+
         <a
           href="tel:+966501234567"
           className="border border-gray-600 text-gray-300 hover:border-gray-500 hover:text-white px-8 py-3 rounded-lg font-semibold transition-all flex items-center justify-center"

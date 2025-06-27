@@ -30,8 +30,7 @@ const DashboardBarbers = () => {
   const [selectedBarber, setSelectedBarber] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
     phone: "",
     password: "",
@@ -116,8 +115,7 @@ const DashboardBarbers = () => {
   const handleEdit = (barber) => {
     setEditingBarber(barber);
     setFormData({
-      firstName: barber.firstName,
-      lastName: barber.lastName,
+      name: barber.name,
       email: barber.email,
       phone: barber.phone,
       password: "",
@@ -134,8 +132,7 @@ const DashboardBarbers = () => {
 
   const resetForm = () => {
     setFormData({
-      firstName: "",
-      lastName: "",
+      name: "",
       email: "",
       phone: "",
       password: "",
@@ -149,8 +146,7 @@ const DashboardBarbers = () => {
   const filteredBarbers = barbers.filter((barber) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      barber.firstName?.toLowerCase().includes(searchLower) ||
-      barber.lastName?.toLowerCase().includes(searchLower) ||
+      barber.name?.toLowerCase().includes(searchLower) ||
       barber.email?.toLowerCase().includes(searchLower) ||
       barber.phone?.includes(searchTerm)
     );
@@ -294,18 +290,18 @@ const DashboardBarbers = () => {
                     {barber.avatar ? (
                       <img
                         src={barber.avatar}
-                        alt={barber.firstName}
+                        alt={barber.name}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
                       <span className="text-white text-xl font-bold">
-                        {barber.firstName?.charAt(0)}
+                        {barber.name?.charAt(0)}
                       </span>
                     )}
                   </div>
                   <div className="flex-1">
                     <h3 className="text-white font-semibold text-lg">
-                      {barber.firstName} {barber.lastName}
+                      {barber.name}
                     </h3>
                     <p className="text-gray-400 text-sm">حلاق محترف</p>
                     <div className="flex items-center mt-1">
@@ -406,35 +402,19 @@ const DashboardBarbers = () => {
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-white font-medium mb-2">
-                      الاسم الأول *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.firstName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, firstName: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white font-medium mb-2">
-                      الاسم الأخير *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.lastName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, lastName: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    الاسم الأول *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    required
+                    className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
+                  />
                 </div>
 
                 <div>
@@ -561,17 +541,17 @@ const DashboardBarbers = () => {
                         {selectedBarber.avatar ? (
                           <img
                             src={selectedBarber.avatar}
-                            alt={selectedBarber.firstName}
+                            alt={selectedBarber.name}
                             className="w-full h-full rounded-full object-cover"
                           />
                         ) : (
                           <span className="text-white text-2xl font-bold">
-                            {selectedBarber.firstName?.charAt(0)}
+                            {selectedBarber.name?.charAt(0)}
                           </span>
                         )}
                       </div>
                       <h3 className="text-white font-semibold text-xl">
-                        {selectedBarber.firstName} {selectedBarber.lastName}
+                        {selectedBarber.name}
                       </h3>
                       <p className="text-gray-400">حلاق محترف</p>
                     </div>
@@ -656,8 +636,7 @@ const DashboardBarbers = () => {
                                   {appointment.service?.nameAr}
                                 </h5>
                                 <p className="text-gray-400 text-sm">
-                                  {appointment.customer?.firstName}{" "}
-                                  {appointment.customer?.lastName}
+                                  {appointment.customer?.name}{" "}
                                 </p>
                               </div>
                               <span className="text-primary-500 font-semibold">
