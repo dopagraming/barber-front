@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 const Register = () => {
   const [formData, setFormData] = useState({
+    userName: "",
     name: "",
     email: "",
     phone: "",
@@ -44,7 +45,8 @@ const Register = () => {
     setLoading(true);
 
     const result = await register({
-      Name: formData.name,
+      userName: formData.userName,
+      name: formData.name,
       email: formData.email,
       phone: formData.phone,
       password: formData.password,
@@ -80,6 +82,23 @@ const Register = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Fields */}
+            <div>
+              <label className="block text-white font-medium mb-2">
+                اسم المستخدم
+              </label>
+              <div className="relative">
+                <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  name="userName"
+                  value={formData.userName}
+                  onChange={handleChange}
+                  required
+                  className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
+                  placeholder="user name"
+                />
+              </div>
+            </div>
             <div>
               <label className="block text-white font-medium mb-2">الأسم</label>
               <div className="relative">

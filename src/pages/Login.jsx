@@ -6,7 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: "",
+    userName: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +25,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    const result = await login(formData.email, formData.password);
+    const result = await login(formData.userName, formData.password);
     console.log(result);
     if (result.success) {
       if (result.role == "admin") {
@@ -70,21 +70,21 @@ const Login = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
+            {/* userName */}
             <div>
               <label className="block text-white font-medium mb-2">
-                البريد الإلكتروني
+                أسم المستخدم
               </label>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="userName"
+                  value={formData.userName}
                   onChange={handleChange}
                   required
                   className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder="أدخل بريدك الإلكتروني"
+                  placeholder="أدخل أسم المستخدم"
                 />
               </div>
             </div>
