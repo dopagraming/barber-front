@@ -6,9 +6,11 @@ import DateTimeSelection from "../components/booking/DateTimeSelection";
 import RepeatOptions from "../components/booking/RepeatOptions";
 import BookingConfirmation from "../components/booking/BookingConfirmation";
 import BookingSuccess from "../components/booking/BookingSuccess";
+import { useNavigate } from "react-router-dom";
 
 const BookingSystem = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const navigate = useNavigate();
   const [bookingData, setBookingData] = useState({
     service: null,
     barber: null,
@@ -56,6 +58,12 @@ const BookingSystem = () => {
   return (
     <div className="min-h-screen py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p
+          className="text-gray-400 mb-5 cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          الصفحة الرئيسية
+        </p>
         {/* Progress Bar */}
         {currentStep < 6 && (
           <div className="mb-12">

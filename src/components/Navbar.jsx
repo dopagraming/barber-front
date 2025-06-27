@@ -246,21 +246,6 @@ const Navbar = () => {
                 </div>
               </div>
 
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block text-sm font-medium transition-colors ${
-                    isActive(item.path)
-                      ? "text-primary-500"
-                      : "text-gray-300 hover:text-white"
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-
               {user ? (
                 <div className="pt-4 border-t border-dark-700 space-y-4">
                   <Link
