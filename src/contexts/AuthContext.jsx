@@ -113,6 +113,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const res = await api.get("api/users/profile"); // endpoint يرجع بيانات المستخدم
+      setUser(res.data); // حدث الـ context
+    } catch (err) {
+      console.error("Failed to refresh user:", err);
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -120,6 +129,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     loginWithGoogle,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -12,10 +12,69 @@ import {
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import api from "../lib/axios";
 
 const Home = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
+  const validatePhone = (value) => {
+    const phoneRegex = /^05\d{8}$/; // يبدأ بـ 05 ويتكون من 10 أرقام
+    if (!value) return "يرجى إدخال رقم الهاتف";
+    if (!phoneRegex.test(value))
+      return "رقم الهاتف غير صالح (مثال: 0591234567)";
+    return "";
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationError = validatePhone(phone);
+    if (validationError) {
+      setError(validationError);
+    } else {
+      setError("");
+      try {
+        await api.put("api/users/profile", { phone });
+        await refreshUser();
+        setPhone("");
+        toast.success("تم تحديث رقم الهاتف بنجاح");
+      } catch (err) {
+        toast.error(err.message);
+      }
+    }
+  };
+  if (user) {
+    if (!user?.phone)
+      return (
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-sm mx-auto mt-10 bg-dark-800 p-6 rounded-lg"
+        >
+          <label htmlFor="phone" className="block text-white font-medium mb-2">
+            أدخل رقم هاتفك:
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="مثال: 0591234567"
+            className="w-full px-4 py-2 rounded-lg border border-dark-600 bg-dark-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+          {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
+          <button
+            type="submit"
+            className="mt-4 w-full bg-primary-500 hover:bg-primary-600 text-white py-2 rounded-lg transition"
+          >
+            إرسال
+          </button>
+        </form>
+      );
+  }
+
   return (
     <div className="min-h-screen ">
       {/* CTA Section */}
