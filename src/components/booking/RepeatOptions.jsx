@@ -186,7 +186,7 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
                         Math.max(1, repeatConfig.interval - 1)
                       )
                     }
-                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded-l-lg flex items-center justify-center"
+                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded flex items-center justify-center"
                   >
                     -
                   </button>
@@ -197,7 +197,7 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
                     onClick={() =>
                       handleConfigChange("interval", repeatConfig.interval + 1)
                     }
-                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded-r-lg flex items-center justify-center"
+                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded flex items-center justify-center"
                   >
                     +
                   </button>
@@ -233,7 +233,7 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
                         Math.max(1, repeatConfig.occurrences - 1)
                       )
                     }
-                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded-l-lg flex items-center justify-center"
+                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded flex items-center justify-center"
                   >
                     -
                   </button>
@@ -247,7 +247,7 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
                         repeatConfig.occurrences + 1
                       )
                     }
-                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded-r-lg flex items-center justify-center"
+                    className="w-8 h-8 bg-dark-700 hover:bg-dark-600 text-white rounded flex items-center justify-center"
                   >
                     +
                   </button>

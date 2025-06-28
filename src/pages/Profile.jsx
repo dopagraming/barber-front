@@ -185,8 +185,8 @@ const Profile = () => {
           transition={{ duration: 0.8 }}
           className="bg-dark-800/50 rounded-2xl p-8 mb-8"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6 space-x-reverse">
+          <div className="flex items-center justify-between flex-wrap">
+            <div className="flex items-center space-x-6 space-x-reverse m-2">
               <div className="w-20 h-20 bg-primary-500 rounded-full flex items-center justify-center">
                 {user?.avatar ? (
                   <img
@@ -204,7 +204,7 @@ const Profile = () => {
                 <h1 className="text-3xl font-bold text-white mb-2">
                   {user?.name}
                 </h1>
-                <div className="flex items-center space-x-4 space-x-reverse text-gray-400">
+                <div className="flex items-center space-x-4 space-x-reverse text-gray-400 flex-wrap">
                   <div className="flex items-center">
                     <Mail className="w-4 h-4 ml-1" />
                     {user?.email}
