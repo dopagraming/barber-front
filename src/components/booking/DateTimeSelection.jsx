@@ -93,21 +93,6 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         <h3 className="text-2xl font-bold text-white mb-4">
           اختر التاريخ والوقت
         </h3>
-        <p className="text-gray-400">حدد الموعد المناسب لك</p>
-      </div>
-
-      {/* Summary */}
-      <div className="bg-dark-700/50 rounded-lg p-4 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <h4 className="text-white font-semibold mb-2">الخدمة:</h4>
-            <p className="text-gray-300">{data.service?.nameAr}</p>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-2">عدد الأشخاص:</h4>
-            <p className="text-gray-300">{data.peopleCount || 1}</p>
-          </div>
-        </div>
       </div>
 
       {/* Date Selection */}
@@ -181,24 +166,14 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
           </div>
         )}
       </div>
-
-      {/* Selected DateTime */}
-      {selectedDate && selectedTime && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-primary-500/10 border border-primary-500/30 rounded-lg p-4 mb-8"
-        >
-          <h4 className="text-primary-400 font-semibold mb-2">
-            الموعد المحدد:
-          </h4>
-          <p className="text-white">
-            {format(selectedDate, "EEEE، d MMMM yyyy", { locale: ar })} في{" "}
-            {selectedTime}
-          </p>
-        </motion.div>
-      )}
-
+      <label className="flex items-center gap-2 mt-4">
+        <input
+          type="checkbox"
+          checked={data.isRepeating}
+          onChange={(e) => updateData({ isRepeating: e.target.checked })}
+        />
+        <span className="text-gray-400">هل تريد تكرار الحجز؟</span>
+      </label>
       {/* Buttons */}
       <div className="flex justify-between">
         <button

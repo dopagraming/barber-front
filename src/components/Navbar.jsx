@@ -46,12 +46,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 space-x-reverse">
-            <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">B</span>
-            </div>
-            <span className="text-white font-bold text-xl gradient-text">
-              BarberShop
-            </span>
+            <img src="/logo.png" alt="logo" width="150px" />
           </Link>
 
           {/* Right Side */}

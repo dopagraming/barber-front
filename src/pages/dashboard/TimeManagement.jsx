@@ -172,43 +172,6 @@ const TimeManagement = () => {
       >
         حفظ الإعدادات
       </button>
-
-      <hr className="border-dark-600" />
-
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">معاينة الأوقات المتاحة</h3>
-        <div className="flex items-center gap-4">
-          <input
-            type="date"
-            value={previewDate}
-            onChange={(e) => setPreviewDate(e.target.value)}
-            className="p-2 rounded bg-dark-600 border border-dark-500"
-          />
-          <button
-            onClick={fetchPreviewSlots}
-            className="bg-primary-500 px-4 py-2 rounded hover:bg-primary-600"
-          >
-            عرض الأوقات
-          </button>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {slotsPreview.map((slot, i) => (
-            <div
-              key={i}
-              className={`text-center p-2 rounded border text-sm font-medium ${
-                slot.available
-                  ? "bg-green-600 border-green-400 text-white"
-                  : "bg-gray-600 text-gray-300 border-gray-500"
-              }`}
-            >
-              {slot.time} ({slot.duration} د)
-            </div>
-          ))}
-          {slotsPreview.length === 0 && (
-            <p className="text-gray-400">لا توجد أوقات</p>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

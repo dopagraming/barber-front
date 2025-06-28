@@ -118,19 +118,6 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
             </div>
           </div>
 
-          {/* Barber */}
-          <div className="flex items-center space-x-4 space-x-reverse">
-            <div className="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center">
-              <User className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex-1">
-              <h5 className="text-white font-medium">
-                {data.barber?.name}
-              </h5>
-              <p className="text-gray-400 text-sm">حلاق محترف</p>
-            </div>
-          </div>
-
           {/* People Count */}
           {(data.peopleCount || 1) > 1 && (
             <div className="flex items-center space-x-4 space-x-reverse">
@@ -144,7 +131,7 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
                 </p>
               </div>
               <div className="text-blue-500 font-bold text-lg">
-                {(data.service?.price || 0) * data.peopleCount} ريال
+                {(data.service?.price || 0) * data.peopleCount} شيكل
               </div>
             </div>
           )}
@@ -246,7 +233,7 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
       </div>
 
       {/* Terms */}
-      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-8">
+      {/* <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-8">
         <h5 className="text-yellow-400 font-medium mb-2">شروط الحجز:</h5>
         <ul className="text-yellow-300 text-sm space-y-1">
           <li>• يرجى الحضور قبل 10 دقائق من موعدك</li>
@@ -259,7 +246,7 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
             </li>
           )}
         </ul>
-      </div>
+      </div> */}
 
       {/* Navigation Buttons */}
       <div className="flex justify-between">

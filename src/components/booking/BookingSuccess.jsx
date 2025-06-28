@@ -94,14 +94,12 @@ const BookingSuccess = ({ data }) => {
         <h4 className="text-blue-400 font-medium mb-3">تذكير مهم:</h4>
         <ul className="text-blue-300 text-sm space-y-2 text-right">
           <li>• احضر قبل 10 دقائق من موعدك</li>
-          <li>• أحضر هويتك الشخصية</li>
-          <li>• سنرسل لك رسالة تذكير قبل الموعد بـ 24 ساعة</li>
           <li>• للإلغاء أو التعديل، اتصل بنا قبل 24 ساعة على الأقل</li>
         </ul>
       </motion.div>
 
       {/* Contact Info */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.7 }}
@@ -116,7 +114,7 @@ const BookingSuccess = ({ data }) => {
             <span className="text-primary-500">العنوان:</span> الرياض، حي الملز
           </div>
         </div>
-      </motion.div>
+      </motion.div> */}
 
       {/* Action Buttons */}
       <motion.div

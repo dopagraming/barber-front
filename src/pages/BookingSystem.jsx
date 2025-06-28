@@ -33,11 +33,19 @@ const BookingSystem = () => {
   };
 
   const nextStep = () => {
-    setCurrentStep((prev) => prev + 1);
+    if (currentStep === 2 && !bookingData.isRepeating) {
+      setCurrentStep((prev) => prev + 2);
+    } else {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   const prevStep = () => {
-    setCurrentStep((prev) => prev - 1);
+    if (currentStep === 4 && !bookingData.isRepeating) {
+      setCurrentStep((prev) => prev - 2);
+    } else {
+      setCurrentStep((prev) => prev - 1);
+    }
   };
 
   const goToStep = (step) => {
@@ -46,7 +54,6 @@ const BookingSystem = () => {
 
   const steps = [
     { number: 1, title: "اختيار الخدمة", component: ServiceSelection },
-    // { number: 2, title: "اختيار الحلاق", component: BarberSelection },
     { number: 2, title: "التاريخ والوقت", component: DateTimeSelection },
     { number: 3, title: "خيارات التكرار", component: RepeatOptions },
     { number: 4, title: "تأكيد الحجز", component: BookingConfirmation },

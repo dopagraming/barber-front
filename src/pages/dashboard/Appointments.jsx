@@ -26,20 +26,19 @@ import api from "../../lib/axios";
 const DashboardAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [services, setServices] = useState([]);
-  const [barbers, setBarbers] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [newAppointment, setNewAppointment] = useState({
-    customer: "",
+    customerName: "",
     barber: "",
     service: "",
     date: "",
     time: "",
     notes: "",
-    status: "pending",
+    status: "confirmed",
   });
 
   useEffect(() => {
@@ -48,17 +47,14 @@ const DashboardAppointments = () => {
 
   const fetchData = async () => {
     try {
-      const [appointmentsRes, servicesRes, barbersRes, customersRes] =
-        await Promise.all([
-          api.get("api/appointments"),
-          api.get("api/services"),
-          api.get("api/barbers"),
-          api.get("api/customers"),
-        ]);
+      const [appointmentsRes, servicesRes, customersRes] = await Promise.all([
+        api.get("api/appointments"),
+        api.get("api/services"),
+        api.get("api/customers"),
+      ]);
 
       setAppointments(appointmentsRes.data);
       setServices(servicesRes.data);
-      setBarbers(barbersRes.data);
       setCustomers(customersRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -112,13 +108,13 @@ const DashboardAppointments = () => {
       setAppointments((prev) => [response.data, ...prev]);
       setShowAddModal(false);
       setNewAppointment({
-        customer: "",
+        customerName: "",
         barber: "",
         service: "",
         date: "",
         time: "",
         notes: "",
-        status: "pending",
+        status: "confirmed",
       });
       toast.success("تم إضافة الموعد بنجاح");
     } catch (error) {
@@ -171,10 +167,7 @@ const DashboardAppointments = () => {
       appointment.customer?.name
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      appointment.service?.nameAr?.includes(searchTerm) ||
-      appointment.barber?.name
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      appointment.service?.nameAr?.includes(searchTerm);
 
     return matchesFilter && matchesSearch;
   });
@@ -235,12 +228,7 @@ const DashboardAppointments = () => {
                 className="bg-dark-700 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500"
               >
                 <option value="all">جميع المواعيد</option>
-                <option value="pending">في الانتظار</option>
-                <option value="confirmed">مؤكد</option>
-                <option value="in-progress">جاري التنفيذ</option>
-                <option value="completed">مكتمل</option>
                 <option value="cancelled">ملغي</option>
-                <option value="no-show">لم يحضر</option>
               </select>
             </div>
           </div>
@@ -278,7 +266,8 @@ const DashboardAppointments = () => {
                     </div>
                     <div>
                       <h3 className="text-white font-semibold text-lg">
-                        {appointment.customer?.name}{" "}
+                        {appointment.customerName ||
+                          appointment.customer?.name?.charAt(0)}
                       </h3>
                       <p className="text-gray-400 text-sm">
                         {appointment.service?.nameAr} -{" "}
@@ -330,61 +319,15 @@ const DashboardAppointments = () => {
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    {appointment.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() =>
-                            updateAppointmentStatus(
-                              appointment._id,
-                              "confirmed"
-                            )
-                          }
-                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center"
-                        >
-                          <CheckCircle className="w-4 h-4 ml-1" />
-                          تأكيد
-                        </button>
-                        <button
-                          onClick={() =>
-                            updateAppointmentStatus(
-                              appointment._id,
-                              "cancelled"
-                            )
-                          }
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center"
-                        >
-                          <XCircle className="w-4 h-4 ml-1" />
-                          إلغاء
-                        </button>
-                      </>
-                    )}
-
-                    {appointment.status === "confirmed" && (
-                      <button
-                        onClick={() =>
-                          updateAppointmentStatus(
-                            appointment._id,
-                            "in-progress"
-                          )
-                        }
-                        className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                      >
-                        بدء الخدمة
-                      </button>
-                    )}
-
-                    {appointment.status === "in-progress" && (
-                      <button
-                        onClick={() =>
-                          updateAppointmentStatus(appointment._id, "completed")
-                        }
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                      >
-                        إنهاء الخدمة
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    onClick={() =>
+                      updateAppointmentStatus(appointment._id, "cancelled")
+                    }
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center"
+                  >
+                    <XCircle className="w-4 h-4 ml-1" />
+                    إلغاء
+                  </button>
 
                   <div className="flex items-center space-x-2 space-x-reverse">
                     <button className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-dark-700 transition-all">
@@ -403,7 +346,6 @@ const DashboardAppointments = () => {
           )}
         </div>
 
-        {/* Add Appointment Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <motion.div
@@ -419,77 +361,44 @@ const DashboardAppointments = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-white font-medium mb-2">
-                      العميل *
+                      أسم العميل *
                     </label>
-                    <select
-                      value={newAppointment.customer}
+                    <input
+                      value={newAppointment.customerName}
                       onChange={(e) =>
                         setNewAppointment({
                           ...newAppointment,
-                          customer: e.target.value,
+                          customerName: e.target.value,
                         })
                       }
                       required
                       className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                    >
-                      <option value="">اختر العميل</option>
-                      {customers.map((customer) => (
-                        <option key={customer._id} value={customer._id}>
-                          {customer.name}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
-
                   <div>
                     <label className="block text-white font-medium mb-2">
-                      الحلاق *
+                      الخدمة *
                     </label>
                     <select
-                      value={newAppointment.barber}
+                      value={newAppointment.service}
                       onChange={(e) =>
                         setNewAppointment({
                           ...newAppointment,
-                          barber: e.target.value,
+                          service: e.target.value,
                         })
                       }
                       required
                       className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
                     >
-                      <option value="">اختر الحلاق</option>
-                      {barbers.map((barber) => (
-                        <option key={barber._id} value={barber._id}>
-                          {barber.name}
+                      <option value="">اختر الخدمة</option>
+                      {services.map((service) => (
+                        <option key={service._id} value={service._id}>
+                          {service.nameAr} - {service.price} شيكل
                         </option>
                       ))}
                     </select>
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-white font-medium mb-2">
-                    الخدمة *
-                  </label>
-                  <select
-                    value={newAppointment.service}
-                    onChange={(e) =>
-                      setNewAppointment({
-                        ...newAppointment,
-                        service: e.target.value,
-                      })
-                    }
-                    required
-                    className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                  >
-                    <option value="">اختر الخدمة</option>
-                    {services.map((service) => (
-                      <option key={service._id} value={service._id}>
-                        {service.nameAr} - {service.price} شيكل
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-white font-medium mb-2">
@@ -576,39 +485,18 @@ const DashboardAppointments = () => {
                     placeholder="أي ملاحظات إضافية..."
                   />
                 </div>
-
-                <div>
-                  <label className="block text-white font-medium mb-2">
-                    حالة الموعد
-                  </label>
-                  <select
-                    value={newAppointment.status}
-                    onChange={(e) =>
-                      setNewAppointment({
-                        ...newAppointment,
-                        status: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                  >
-                    <option value="pending">في الانتظار</option>
-                    <option value="confirmed">مؤكد</option>
-                  </select>
-                </div>
-
                 <div className="flex justify-end space-x-4 space-x-reverse">
                   <button
                     type="button"
                     onClick={() => {
                       setShowAddModal(false);
                       setNewAppointment({
-                        customer: "",
-                        barber: "",
+                        customerName: "",
                         service: "",
                         date: "",
                         time: "",
                         notes: "",
-                        status: "pending",
+                        status: "confirmed",
                       });
                     }}
                     className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-600 transition-all"

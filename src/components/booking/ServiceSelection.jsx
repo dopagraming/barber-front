@@ -11,15 +11,6 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [peopleCount, setPeopleCount] = useState(data.peopleCount || 1);
 
-  const categories = [
-    { id: "all", name: "جميع الخدمات" },
-    { id: "haircut", name: "قص الشعر" },
-    { id: "beard", name: "تهذيب اللحية" },
-    { id: "styling", name: "تصفيف الشعر" },
-    { id: "treatment", name: "علاجات الشعر" },
-    { id: "package", name: "باقات خاصة" },
-  ];
-
   useEffect(() => {
     fetchServices();
   }, []);
@@ -70,7 +61,6 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
         <h3 className="text-2xl font-bold text-white mb-4">
           اختر الخدمة المطلوبة
         </h3>
-        <p className="text-gray-400">اختر من بين خدماتنا المتنوعة</p>
       </div>
 
       {/* People Count Selector */}
@@ -110,23 +100,6 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
         )}
       </div>
 
-      {/* Category Filter */}
-      <div className="flex flex-wrap gap-3 mb-8">
-        {categories?.map((category) => (
-          <button
-            key={category.id}
-            onClick={() => setSelectedCategory(category.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              selectedCategory === category.id
-                ? "bg-primary-500 text-white"
-                : "bg-dark-700 text-gray-300 hover:bg-dark-600"
-            }`}
-          >
-            {category.name}
-          </button>
-        ))}
-      </div>
-
       {/* Services Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {filteredServices?.map((service, index) => (
@@ -148,11 +121,11 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
               </h4>
               <div className="text-right">
                 <div className="text-primary-500 font-bold text-lg">
-                  {service.price} ريال
+                  {service.price} شيكل
                 </div>
                 {peopleCount > 1 && (
                   <div className="text-gray-400 text-sm">
-                    {service.price * peopleCount} ريال للجميع
+                    {service.price * peopleCount} شيكل للجميع
                   </div>
                 )}
               </div>
@@ -183,38 +156,6 @@ const ServiceSelection = ({ data, updateData, onNext }) => {
         <div className="text-center py-8">
           <p className="text-gray-400">لا توجد خدمات في هذه الفئة حالياً</p>
         </div>
-      )}
-
-      {/* Selected Service Summary */}
-      {data.service && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-primary-500/10 border border-primary-500/30 rounded-lg p-4 mb-8"
-        >
-          <h4 className="text-primary-400 font-semibold mb-2">
-            الخدمة المختارة:
-          </h4>
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-white font-medium">{data.service.nameAr}</p>
-              <p className="text-gray-400 text-sm">
-                {data.service.duration} دقيقة • {peopleCount}{" "}
-                {peopleCount === 1 ? "شخص" : "أشخاص"}
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-primary-500 font-bold text-xl">
-                {getTotalPrice()} ريال
-              </div>
-              {peopleCount > 1 && (
-                <div className="text-gray-400 text-sm">
-                  {data.service.price} × {peopleCount}
-                </div>
-              )}
-            </div>
-          </div>
-        </motion.div>
       )}
 
       {/* Continue Button */}
