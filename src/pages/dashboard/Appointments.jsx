@@ -468,23 +468,6 @@ const DashboardAppointments = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-white font-medium mb-2">
-                    ملاحظات
-                  </label>
-                  <textarea
-                    value={newAppointment.notes}
-                    onChange={(e) =>
-                      setNewAppointment({
-                        ...newAppointment,
-                        notes: e.target.value,
-                      })
-                    }
-                    rows={3}
-                    className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                    placeholder="أي ملاحظات إضافية..."
-                  />
-                </div>
                 <div className="flex justify-end space-x-4 space-x-reverse">
                   <button
                     type="button"
