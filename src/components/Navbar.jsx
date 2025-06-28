@@ -35,9 +35,9 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const languages = [
-    { code: "ar", name: "العربية", flag: "🇸🇦" },
-    { code: "en", name: "English", flag: "🇺🇸" },
-    { code: "he", name: "עברית", flag: "🇮🇱" },
+    { code: "ar", name: "العربية" },
+    { code: "en", name: "English" },
+    { code: "he", name: "עברית" },
   ];
 
   return (
@@ -58,9 +58,6 @@ const Navbar = () => {
                 className="p-2 text-gray-300 hover:text-white transition-colors flex items-center"
               >
                 <Globe className="w-5 h-5 ml-1" />
-                <span className="text-sm">
-                  {languages.find((l) => l.code === language)?.flag}
-                </span>
               </button>
 
               <AnimatePresence>
