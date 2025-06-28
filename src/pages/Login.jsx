@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, loginWithGoogle } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -63,9 +65,9 @@ const Login = () => {
               <span className="text-white font-bold text-2xl">B</span>
             </div>
             <h2 className="text-3xl font-bold text-white mb-2">
-              مرحباً بعودتك
+              {t("welcomeBack")}
             </h2>
-            <p className="text-gray-400">سجل دخولك للوصول إلى حسابك</p>
+            <p className="text-gray-400">{t("loginToAccount")}</p>
           </div>
 
           {/* Form */}
@@ -73,7 +75,7 @@ const Login = () => {
             {/* userName */}
             <div>
               <label className="block text-white font-medium mb-2">
-                أسم المستخدم
+                {t("username")}
               </label>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -84,7 +86,7 @@ const Login = () => {
                   onChange={handleChange}
                   required
                   className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder="أدخل أسم المستخدم"
+                  placeholder={t("enterUsername")}
                 />
               </div>
             </div>
@@ -92,7 +94,7 @@ const Login = () => {
             {/* Password */}
             <div>
               <label className="block text-white font-medium mb-2">
-                كلمة المرور
+                {t("password")}
               </label>
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -103,7 +105,7 @@ const Login = () => {
                   onChange={handleChange}
                   required
                   className="w-full pr-12 pl-12 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder="أدخل كلمة المرور"
+                  placeholder={t("enterPassword")}
                 />
                 <button
                   type="button"
@@ -125,7 +127,7 @@ const Login = () => {
               disabled={loading}
               className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
-              {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+              {loading ? t("loggingIn") : t("login")}
             </button>
           </form>
           {/* Login with Google */}
@@ -139,18 +141,18 @@ const Login = () => {
               alt="Google"
               className="w-5 h-5"
             />
-            <span>تسجيل الدخول عبر Google</span>
+            <span>{t("loginWithGoogle")}</span>
           </button>
 
           {/* Footer */}
           <div className="text-center mt-6">
             <p className="text-gray-400">
-              ليس لديك حساب؟{" "}
+              {t("dontHaveAccount")}{" "}
               <Link
                 to="/register"
                 className="text-primary-500 hover:text-primary-400 font-medium"
               >
-                إنشاء حساب جديد
+                {t("createNewAccountLink")}
               </Link>
             </p>
           </div>

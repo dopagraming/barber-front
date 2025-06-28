@@ -17,8 +17,9 @@ import {
   Award,
 } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS, he } from "date-fns/locale";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -32,6 +33,20 @@ const Profile = () => {
   const [editMode, setEditMode] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const { user, setUser } = useAuth();
+  const { t, language } = useLanguage();
+
+  const getDateLocale = () => {
+    switch (language) {
+      case "ar":
+        return ar;
+      case "he":
+        return he;
+      case "en":
+        return enUS;
+      default:
+        return ar;
+    }
+  };
 
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
@@ -89,10 +104,10 @@ const Profile = () => {
       const response = await api.put("api/users/profile", profileData);
       setUser(response.data);
       setEditMode(false);
-      toast.success("تم تحديث الملف الشخصي بنجاح");
+      toast.success(t("operationSuccessful"));
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("حدث خطأ في تحديث الملف الشخصي");
+      toast.error(t("operationFailed"));
     }
   };
 
@@ -100,7 +115,7 @@ const Profile = () => {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("كلمات المرور الجديدة غير متطابقة");
+      toast.error(t("passwordsNotMatch"));
       return;
     }
 
@@ -116,12 +131,10 @@ const Profile = () => {
         confirmPassword: "",
       });
       setShowPasswordForm(false);
-      toast.success("تم تغيير كلمة المرور بنجاح");
+      toast.success(t("passwordChangedSuccess"));
     } catch (error) {
       console.error("Error changing password:", error);
-      toast.error(
-        error.response?.data?.message || "حدث خطأ في تغيير كلمة المرور"
-      );
+      toast.error(error.response?.data?.message || t("passwordChangeError"));
     }
   };
 
@@ -134,10 +147,10 @@ const Profile = () => {
       setAppointments((prev) =>
         prev.map((apt) => (apt._id === appointmentId ? response.data : apt))
       );
-      toast.success("تم تحديث الموعد بنجاح");
+      toast.success(t("appointmentUpdatedSuccess"));
     } catch (error) {
       console.error("Error updating appointment:", error);
-      toast.error("حدث خطأ في تحديث الموعد");
+      toast.error(t("appointmentUpdateError"));
     }
   };
 
@@ -157,18 +170,7 @@ const Profile = () => {
   };
 
   const getStatusText = (status) => {
-    switch (status) {
-      case "confirmed":
-        return "مؤكد";
-      case "pending":
-        return "في الانتظار";
-      case "completed":
-        return "مكتمل";
-      case "cancelled":
-        return "ملغي";
-      default:
-        return status;
-    }
+    return t(status);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -220,13 +222,13 @@ const Profile = () => {
                 className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center"
               >
                 <Edit className="w-4 h-4 ml-2" />
-                {editMode ? "إلغاء" : "تعديل الملف"}
+                {editMode ? t("cancel") : t("editProfile")}
               </button>
               <button
                 onClick={() => setShowPasswordForm(!showPasswordForm)}
                 className="bg-dark-700 hover:bg-dark-600 text-white px-6 py-3 rounded-lg font-medium transition-all"
               >
-                تغيير كلمة المرور
+                {t("changePassword")}
               </button>
             </div>
           </div>
@@ -242,7 +244,9 @@ const Profile = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">إجمالي المواعيد</p>
+                <p className="text-gray-400 text-sm">
+                  {t("totalAppointments")}
+                </p>
                 <p className="text-white text-2xl font-bold">
                   {stats.totalAppointments || 0}
                 </p>
@@ -259,7 +263,9 @@ const Profile = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">مواعيد مكتملة</p>
+                <p className="text-gray-400 text-sm">
+                  {t("completedAppointments")}
+                </p>
                 <p className="text-white text-2xl font-bold">
                   {stats.completedAppointments || 0}
                 </p>
@@ -276,7 +282,9 @@ const Profile = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">مواعيد معلقة</p>
+                <p className="text-gray-400 text-sm">
+                  {t("pendingAppointments")}
+                </p>
                 <p className="text-white text-2xl font-bold">
                   {stats.pendingAppointments || 0}
                 </p>
@@ -293,9 +301,9 @@ const Profile = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">إجمالي الإنفاق</p>
+                <p className="text-gray-400 text-sm">{t("totalSpent")}</p>
                 <p className="text-white text-2xl font-bold">
-                  {stats.totalAmount || 0} شيكل
+                  {stats.totalAmount || 0} {t("currency")}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-primary-500" />
@@ -311,13 +319,13 @@ const Profile = () => {
             className="bg-dark-800/50 rounded-lg p-6 mb-8"
           >
             <h3 className="text-white font-semibold text-lg mb-6">
-              تعديل الملف الشخصي
+              {t("editPersonalProfile")}
             </h3>
             <form onSubmit={handleProfileUpdate} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-white font-medium mb-2">
-                    الاسم{" "}
+                    {t("name")}
                   </label>
                   <input
                     type="text"
@@ -335,7 +343,7 @@ const Profile = () => {
 
               <div>
                 <label className="block text-white font-medium mb-2">
-                  رقم الجوال
+                  {t("phone")}
                 </label>
                 <input
                   type="tel"
@@ -349,7 +357,7 @@ const Profile = () => {
 
               <div>
                 <label className="block text-white font-medium mb-2">
-                  رابط الصورة الشخصية
+                  {t("profilePictureUrl")}
                 </label>
                 <input
                   type="url"
@@ -367,14 +375,14 @@ const Profile = () => {
                   onClick={() => setEditMode(false)}
                   className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-600 transition-all"
                 >
-                  إلغاء
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-all flex items-center"
                 >
                   <Save className="w-4 h-4 ml-2" />
-                  حفظ التغييرات
+                  {t("saveChanges")}
                 </button>
               </div>
             </form>
@@ -389,12 +397,12 @@ const Profile = () => {
             className="bg-dark-800/50 rounded-lg p-6 mb-8"
           >
             <h3 className="text-white font-semibold text-lg mb-6">
-              تغيير كلمة المرور
+              {t("changePassword")}
             </h3>
             <form onSubmit={handlePasswordChange} className="space-y-6">
               <div>
                 <label className="block text-white font-medium mb-2">
-                  كلمة المرور الحالية
+                  {t("currentPassword")}
                 </label>
                 <div className="relative">
                   <input
@@ -430,7 +438,7 @@ const Profile = () => {
 
               <div>
                 <label className="block text-white font-medium mb-2">
-                  كلمة المرور الجديدة
+                  {t("newPassword")}
                 </label>
                 <div className="relative">
                   <input
@@ -467,7 +475,7 @@ const Profile = () => {
 
               <div>
                 <label className="block text-white font-medium mb-2">
-                  تأكيد كلمة المرور الجديدة
+                  {t("confirmNewPassword")}
                 </label>
                 <div className="relative">
                   <input
@@ -507,13 +515,13 @@ const Profile = () => {
                   onClick={() => setShowPasswordForm(false)}
                   className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-600 transition-all"
                 >
-                  إلغاء
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-all"
                 >
-                  تغيير كلمة المرور
+                  {t("changePassword")}
                 </button>
               </div>
             </form>
@@ -531,7 +539,7 @@ const Profile = () => {
             }`}
           >
             <Calendar className="w-4 h-4 inline ml-2" />
-            مواعيدي
+            {t("myAppointments")}
           </button>
           <button
             onClick={() => setActiveTab("history")}
@@ -542,7 +550,7 @@ const Profile = () => {
             }`}
           >
             <Clock className="w-4 h-4 inline ml-2" />
-            السجل
+            {t("appointmentHistory")}
           </button>
         </div>
 
@@ -556,7 +564,7 @@ const Profile = () => {
           {activeTab === "appointments" && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-white mb-6">
-                المواعيد القادمة
+                {t("upcomingAppointments")}
               </h2>
 
               {appointments.filter(
@@ -566,16 +574,16 @@ const Profile = () => {
                 <div className="bg-dark-800/50 rounded-lg p-8 text-center">
                   <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-white font-semibold text-lg mb-2">
-                    لا توجد مواعيد قادمة
+                    {t("noUpcomingAppointments")}
                   </h3>
                   <p className="text-gray-400 mb-6">
-                    احجز موعدك الآن واستمتع بخدماتنا المميزة
+                    {t("bookNowEnjoyService")}
                   </p>
                   <Link
                     to="/booking"
                     className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-medium transition-all inline-block"
                   >
-                    احجز موعد جديد
+                    {t("bookNewAppointment")}
                   </Link>
                 </div>
               ) : (
@@ -602,16 +610,6 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="flex items-center space-x-3 space-x-reverse">
-                            {/* <button
-                              onClick={() =>
-                                handleAppointmentUpdate(appointment._id, {
-                                  status: "cancelled",
-                                })
-                              }
-                              className="text-blue-400 hover:text-blue-300 px-3 py-1 rounded-lg hover:bg-blue-400/10 transition-all text-sm"
-                            >
-                              تعديل{" "}
-                            </button> */}
                             <button
                               onClick={() =>
                                 handleAppointmentUpdate(appointment._id, {
@@ -620,7 +618,7 @@ const Profile = () => {
                               }
                               className="text-red-400 hover:text-red-300 px-3 py-1 rounded-lg hover:bg-red-400/10 transition-all text-sm"
                             >
-                              إلغاء
+                              {t("cancel")}
                             </button>
                           </div>
                         </div>
@@ -631,7 +629,7 @@ const Profile = () => {
                             {format(
                               new Date(appointment.date),
                               "EEEE، d MMMM yyyy",
-                              { locale: ar }
+                              { locale: getDateLocale() }
                             )}
                           </div>
                           <div className="flex items-center text-gray-400">
@@ -639,7 +637,7 @@ const Profile = () => {
                             {appointment.time}
                           </div>
                           <div className="flex items-center text-primary-500 font-semibold">
-                            {appointment.totalPrice} شيكل
+                            {appointment.totalPrice} {t("currency")}
                           </div>
                         </div>
 
@@ -660,7 +658,7 @@ const Profile = () => {
           {activeTab === "history" && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-white mb-6">
-                سجل المواعيد
+                {t("appointmentHistory")}
               </h2>
 
               {appointments.filter((apt) => apt.status === "completed")
@@ -668,9 +666,9 @@ const Profile = () => {
                 <div className="bg-dark-800/50 rounded-lg p-8 text-center">
                   <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-white font-semibold text-lg mb-2">
-                    لا يوجد سجل مواعيد
+                    {t("noAppointmentHistory")}
                   </h3>
-                  <p className="text-gray-400">ستظهر هنا المواعيد المكتملة</p>
+                  <p className="text-gray-400">{t("historyWillAppear")}</p>
                 </div>
               ) : (
                 <div className="grid gap-6">
@@ -691,13 +689,13 @@ const Profile = () => {
                                 {appointment.service?.nameAr}
                               </h3>
                               <p className="text-gray-400">
-                                مع {appointment.barber?.name}{" "}
+                                {t("with")} {appointment.barber?.name}
                               </p>
                             </div>
                           </div>
                           <div className="text-left">
                             <div className="text-primary-500 font-semibold">
-                              {appointment.totalPrice} شيكل
+                              {appointment.totalPrice} {t("currency")}
                             </div>
                             {appointment.rating && (
                               <div className="flex items-center mt-1">
@@ -718,7 +716,7 @@ const Profile = () => {
                             {format(
                               new Date(appointment.date),
                               "EEEE، d MMMM yyyy",
-                              { locale: ar }
+                              { locale: getDateLocale() }
                             )}
                           </div>
                           <div className="flex items-center">

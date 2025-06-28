@@ -1,23 +1,25 @@
 // Updated TimeManagement.jsx
 import { useEffect, useState } from "react";
+import { useLanguage } from "../../contexts/LanguageContext";
 import api from "../../lib/axios";
 import toast from "react-hot-toast";
 
-const days = [
-  { id: "sunday", name: "الأحد" },
-  { id: "monday", name: "الاثنين" },
-  { id: "tuesday", name: "الثلاثاء" },
-  { id: "wednesday", name: "الأربعاء" },
-  { id: "thursday", name: "الخميس" },
-  { id: "friday", name: "الجمعة" },
-  { id: "saturday", name: "السبت" },
-];
-
 const TimeManagement = () => {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [previewDate, setPreviewDate] = useState("");
   const [slotsPreview, setSlotsPreview] = useState([]);
+
+  const days = [
+    { id: "sunday", name: t("sunday") },
+    { id: "monday", name: t("monday") },
+    { id: "tuesday", name: t("tuesday") },
+    { id: "wednesday", name: t("wednesday") },
+    { id: "thursday", name: t("thursday") },
+    { id: "friday", name: t("friday") },
+    { id: "saturday", name: t("saturday") },
+  ];
 
   useEffect(() => {
     fetchSettings();
@@ -74,11 +76,11 @@ const TimeManagement = () => {
   };
 
   if (loading || !settings)
-    return <div className="text-white p-4">...تحميل</div>;
+    return <div className="text-white p-4">{t("loading")}</div>;
 
   return (
     <div className="text-white p-6 max-w-4xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold">إعدادات أوقات العمل</h2>
+      <h2 className="text-2xl font-bold">{t("workingHoursSettings")}</h2>
 
       <div className="space-y-4">
         {settings.workingDays.map((day) => (
@@ -89,7 +91,7 @@ const TimeManagement = () => {
             <div className="flex justify-between items-center">
               <span className="font-semibold">{day.name}</span>
               <label className="flex items-center space-x-2 space-x-reverse">
-                <span>تفعيل</span>
+                <span>{t("enable")}</span>
                 <input
                   type="checkbox"
                   checked={day.enabled}
@@ -130,7 +132,7 @@ const TimeManagement = () => {
                     )
                   }
                   className="p-2 rounded bg-dark-600 border border-dark-500"
-                  placeholder="مدة الموعد بالدقائق"
+                  placeholder={t("slotDuration")}
                 />
               </div>
             )}
@@ -139,9 +141,9 @@ const TimeManagement = () => {
       </div>
 
       <div className="bg-dark-700 p-4 rounded-lg border border-dark-600">
-        <h3 className="font-semibold mb-2">وقت الاستراحة</h3>
+        <h3 className="font-semibold mb-2">{t("breakTime")}</h3>
         <label className="flex items-center space-x-2 space-x-reverse mb-2">
-          <span>تفعيل</span>
+          <span>{t("enable")}</span>
           <input
             type="checkbox"
             checked={settings.breakTime.enabled}
@@ -170,7 +172,7 @@ const TimeManagement = () => {
         onClick={saveSettings}
         className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-lg"
       >
-        حفظ الإعدادات
+        {t("saveSettings")}
       </button>
     </div>
   );

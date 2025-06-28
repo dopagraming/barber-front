@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register, loginWithGoogle } = useAuth();
+  const { t } = useLanguage();
 
   const navigate = useNavigate();
 
@@ -74,9 +76,9 @@ const Register = () => {
               <span className="text-white font-bold text-2xl">B</span>
             </div>
             <h2 className="text-3xl font-bold text-white mb-2">
-              إنشاء حساب جديد
+              {t("createAccount")}
             </h2>
-            <p className="text-gray-400">انضم إلينا واحجز موعدك الأول</p>
+            <p className="text-gray-400">{t("joinUsBookFirst")}</p>
           </div>
 
           {/* Form */}
@@ -84,7 +86,7 @@ const Register = () => {
             {/* Name Fields */}
             <div>
               <label className="block text-white font-medium mb-2">
-                اسم المستخدم
+                {t("username")}
               </label>
               <div className="relative">
                 <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -100,7 +102,9 @@ const Register = () => {
               </div>
             </div>
             <div>
-              <label className="block text-white font-medium mb-2">الأسم</label>
+              <label className="block text-white font-medium mb-2">
+                {t("name")}
+              </label>
               <div className="relative">
                 <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
@@ -110,7 +114,7 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder=" أحمد فواد المصري"
+                  placeholder={t("fullNameExample")}
                 />
               </div>
             </div>
@@ -118,7 +122,7 @@ const Register = () => {
             {/* Email */}
             <div>
               <label className="block text-white font-medium mb-2">
-                البريد الإلكتروني
+                {t("email")}
               </label>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -129,7 +133,7 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder="ahmed@example.com"
+                  placeholder={t("emailExample")}
                 />
               </div>
             </div>
@@ -137,7 +141,7 @@ const Register = () => {
             {/* Phone */}
             <div>
               <label className="block text-white font-medium mb-2">
-                رقم الجوال
+                {t("phone")}
               </label>
               <div className="relative">
                 <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -148,7 +152,7 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder="+966 50 123 4567"
+                  placeholder={t("phoneExample2")}
                 />
               </div>
             </div>
@@ -156,7 +160,7 @@ const Register = () => {
             {/* Password */}
             <div>
               <label className="block text-white font-medium mb-2">
-                كلمة المرور
+                {t("password")}
               </label>
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -168,7 +172,7 @@ const Register = () => {
                   required
                   minLength={6}
                   className="w-full pr-12 pl-12 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder="أدخل كلمة مرور قوية"
+                  placeholder={t("enterStrongPassword")}
                 />
                 <button
                   type="button"
@@ -187,7 +191,7 @@ const Register = () => {
             {/* Confirm Password */}
             <div>
               <label className="block text-white font-medium mb-2">
-                تأكيد كلمة المرور
+                {t("confirmPassword")}
               </label>
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -198,7 +202,7 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   className="w-full pr-12 pl-12 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder="أعد إدخال كلمة المرور"
+                  placeholder={t("reenterPassword")}
                 />
                 <button
                   type="button"
@@ -220,7 +224,7 @@ const Register = () => {
               disabled={loading}
               className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
-              {loading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
+              {loading ? t("creatingAccount") : t("register")}
             </button>
           </form>
 
@@ -235,18 +239,18 @@ const Register = () => {
               alt="Google"
               className="w-5 h-5"
             />
-            <span>تسجيل عبر Google</span>
+            <span>{t("signupWithGoogle")}</span>
           </button>
 
           {/* Footer */}
           <div className="text-center mt-6">
             <p className="text-gray-400">
-              لديك حساب بالفعل؟{" "}
+              {t("alreadyHaveAccount")}{" "}
               <Link
                 to="/login"
                 className="text-primary-500 hover:text-primary-400 font-medium"
               >
-                تسجيل الدخول
+                {t("loginLink")}
               </Link>
             </p>
           </div>

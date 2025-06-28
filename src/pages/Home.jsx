@@ -1,15 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  Scissors,
-  Clock,
-  Users,
-  Star,
-  Calendar,
-  CheckCircle,
-  Award,
-  MapPin,
-} from "lucide-react";
+import { Calendar } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
@@ -18,14 +9,14 @@ import api from "../lib/axios";
 
 const Home = () => {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+
   const validatePhone = (value) => {
     const phoneRegex = /^05\d{8}$/; // يبدأ بـ 05 ويتكون من 10 أرقام
-    if (!value) return "يرجى إدخال رقم الهاتف";
-    if (!phoneRegex.test(value))
-      return "رقم الهاتف غير صالح (مثال: 0591234567)";
+    if (!value) return t("phoneRequired");
+    if (!phoneRegex.test(value)) return t("phoneInvalid");
     return "";
   };
 
@@ -40,12 +31,13 @@ const Home = () => {
         await api.put("api/users/profile", { phone });
         await refreshUser();
         setPhone("");
-        toast.success("تم تحديث رقم الهاتف بنجاح");
+        toast.success(t("phoneUpdatedSuccess"));
       } catch (err) {
         toast.error(err.message);
       }
     }
   };
+
   if (user) {
     if (!user?.phone)
       return (
@@ -54,14 +46,14 @@ const Home = () => {
           className="max-w-sm mx-auto mt-10 bg-dark-800 p-6 rounded-lg"
         >
           <label htmlFor="phone" className="block text-white font-medium mb-2">
-            أدخل رقم هاتفك:
+            {t("enterPhoneNumber")}
           </label>
           <input
             type="tel"
             id="phone"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="مثال: 0591234567"
+            placeholder={t("phoneExample")}
             className="w-full px-4 py-2 rounded-lg border border-dark-600 bg-dark-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
@@ -69,7 +61,7 @@ const Home = () => {
             type="submit"
             className="mt-4 w-full bg-primary-500 hover:bg-primary-600 text-white py-2 rounded-lg transition"
           >
-            إرسال
+            {t("send")}
           </button>
         </form>
       );
@@ -89,10 +81,10 @@ const Home = () => {
             className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-8 md:p-12"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              جاهز لتجربة أفضل حلاقة؟
+              {t("readyForBestHaircut")}
             </h2>
             <p className="text-primary-100 text-lg mb-8">
-              احجز موعدك الآن واستمتع بخدمة استثنائية
+              {t("bookNowEnjoyService")}
             </p>
             <div className="flex flex-col text-center items-center gap-2 ">
               <Link
@@ -100,14 +92,14 @@ const Home = () => {
                 className="bg-white w-fit text-primary-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg inline-flex items-center"
               >
                 <Calendar className="w-5 h-5 ml-2" />
-                {user ? "حجز موعد" : "تسجيل الدخول"}
+                {user ? t("booking") : t("login")}
               </Link>
               <Link
                 to={user ? "/profile" : "/register"}
                 className="bg-white w-fit text-primary-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg inline-flex items-center"
               >
                 <Calendar className="w-5 h-5 ml-2" />
-                {user ? "حجوزاتي" : "إنشاء حساب جديد"}
+                {user ? t("myBookings") : t("createNewAccount")}
               </Link>
             </div>
           </motion.div>

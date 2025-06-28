@@ -24,6 +24,7 @@ import {
   Pie,
 } from "recharts";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../lib/axios";
 
@@ -31,6 +32,7 @@ const Dashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   // if you wanna to fetch Analytics from database use this function fetchAnalytics
 
@@ -53,28 +55,28 @@ const Dashboard = () => {
 
   const stats = [
     {
-      title: "إجمالي العملاء",
+      title: t("totalCustomers"),
       value: analytics?.totalCustomers || 0,
       icon: <Users className="w-8 h-8" />,
       color: "bg-blue-500",
       change: "+12%",
     },
     {
-      title: "مواعيد اليوم",
+      title: t("todayAppointments"),
       value: analytics?.todayAppointments || 0,
       icon: <Calendar className="w-8 h-8" />,
       color: "bg-green-500",
       change: "+8%",
     },
     {
-      title: "الإيرادات الشهرية",
-      value: `${analytics?.monthlyRevenue || 0} شيكل`,
+      title: t("monthlyRevenue"),
+      value: `${analytics?.monthlyRevenue || 0} ${t("currency")}`,
       icon: <DollarSign className="w-8 h-8" />,
       color: "bg-primary-500",
       change: "+15%",
     },
     {
-      title: "إجمالي المواعيد",
+      title: t("totalAppointments"),
       value: analytics?.totalAppointments || 0,
       icon: <TrendingUp className="w-8 h-8" />,
       color: "bg-purple-500",
@@ -84,12 +86,12 @@ const Dashboard = () => {
 
   // Mock data for charts
   const monthlyData = [
-    { month: "يناير", appointments: 45, revenue: 2250 },
-    { month: "فبراير", appointments: 52, revenue: 2600 },
-    { month: "مارس", appointments: 48, revenue: 2400 },
-    { month: "أبريل", appointments: 61, revenue: 3050 },
-    { month: "مايو", appointments: 55, revenue: 2750 },
-    { month: "يونيو", appointments: 67, revenue: 3350 },
+    { month: t("january"), appointments: 45, revenue: 2250 },
+    { month: t("february"), appointments: 52, revenue: 2600 },
+    { month: t("march"), appointments: 48, revenue: 2400 },
+    { month: t("april"), appointments: 61, revenue: 3050 },
+    { month: t("may"), appointments: 55, revenue: 2750 },
+    { month: t("june"), appointments: 67, revenue: 3350 },
   ];
 
   // const serviceData =
@@ -109,9 +111,11 @@ const Dashboard = () => {
           transition={{ duration: 0.8 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-white mb-2">لوحة التحكم</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {t("dashboard")}
+          </h1>
           <p className="text-gray-400">
-            مرحباً {user?.name}، إليك نظرة عامة على أداء الصالون
+            {t("welcome")} {user?.name}، {t("salonOverview")}
           </p>
         </motion.div>
 
@@ -141,80 +145,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="bg-dark-800/50 rounded-lg p-6 border border-primary-500/20"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-white font-semibold text-lg">
-                الأداء الشهري
-              </h3>
-              <BarChart3 className="w-5 h-5 text-primary-500" />
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="month" stroke="#9CA3AF" />
-                <YAxis stroke="#9CA3AF" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1F2937",
-                    border: "1px solid #F59332",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Bar
-                  dataKey="appointments"
-                  fill="#F59332"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="bg-dark-800/50 rounded-lg p-6 border border-primary-500/20"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-white font-semibold text-lg">
-                الخدمات الأكثر طلباً
-              </h3>
-              <PieChart className="w-5 h-5 text-primary-500" />
-            </div>
-            {serviceData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Pie
-                    data={serviceData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                  >
-                    {serviceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </RechartsPieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-gray-400">
-                لا توجد بيانات متاحة
-              </div>
-            )}
-          </motion.div>
-        </div> */}
-
         {/* Quick Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -223,7 +153,7 @@ const Dashboard = () => {
           className="bg-dark-800/50 rounded-lg p-6 border border-primary-500/20"
         >
           <h3 className="text-white font-semibold text-lg mb-6">
-            إجراءات سريعة
+            {t("quickActions")}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
@@ -231,8 +161,10 @@ const Dashboard = () => {
               className="bg-primary-500 hover:bg-primary-600 text-white p-4 rounded-lg transition-all text-center group"
             >
               <Calendar className="w-8 h-8 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <h4 className="font-medium">إدارة المواعيد</h4>
-              <p className="text-sm opacity-90">عرض وإدارة جميع المواعيد</p>
+              <h4 className="font-medium">{t("manageAppointments")}</h4>
+              <p className="text-sm opacity-90">
+                {t("viewManageAllAppointments")}
+              </p>
             </Link>
 
             <Link
@@ -240,8 +172,8 @@ const Dashboard = () => {
               className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-lg transition-all text-center group"
             >
               <Users className="w-8 h-8 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <h4 className="font-medium">إدارة العملاء</h4>
-              <p className="text-sm opacity-90">عرض معلومات العملاء</p>
+              <h4 className="font-medium">{t("manageCustomers")}</h4>
+              <p className="text-sm opacity-90">{t("viewCustomerInfo")}</p>
             </Link>
 
             <Link
@@ -249,8 +181,8 @@ const Dashboard = () => {
               className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-lg transition-all text-center group"
             >
               <Star className="w-8 h-8 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <h4 className="font-medium">إدارة الخدمات</h4>
-              <p className="text-sm opacity-90">إضافة وتعديل الخدمات</p>
+              <h4 className="font-medium">{t("manageServices")}</h4>
+              <p className="text-sm opacity-90">{t("addEditServices")}</p>
             </Link>
           </div>
         </motion.div>

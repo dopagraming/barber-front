@@ -5,18 +5,20 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
 // Components
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
 import LoadingSpinner from "./components/LoadingSpinner";
 import DashboardLayout from "./components/DashboardLayout";
+import ErrorBoundary from "./components/ErrorBoundary";
+import SkipToContent from "./components/SkipToContent";
+import SEOHead from "./components/SEOHead";
 
 // Pages
 import Home from "./pages/Home";
-import Services from "./pages/Services";
 import BookingSystem from "./pages/BookingSystem";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -68,41 +70,35 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
+      <SkipToContent />
+
       <Routes>
         {/* Public Routes with Navbar */}
         <Route
           path="/"
           element={
             <>
+              <SEOHead />
               <Navbar />
-              <main className="pt-16">
+              <main id="main-content" className="pt-16">
                 <Home />
               </main>
-              <Footer />
             </>
           }
         />
-        <Route
-          path="/services"
-          element={
-            <>
-              <Navbar />
-              <main className="pt-16">
-                <Services />
-              </main>
-              <Footer />
-            </>
-          }
-        />
+
         <Route
           path="/login"
           element={
             <>
+              <SEOHead
+                title="تسجيل الدخول - Ali Barber Shop"
+                description="سجل دخولك للوصول إلى حسابك وإدارة مواعيدك"
+              />
               <Navbar />
-              <main className="pt-16">
+              <main id="main-content" className="pt-16">
                 <Login />
               </main>
-              <Footer />
             </>
           }
         />
@@ -110,11 +106,14 @@ const AppContent = () => {
           path="/register"
           element={
             <>
+              <SEOHead
+                title="إنشاء حساب جديد - Ali Barber Shop"
+                description="انضم إلينا واحجز موعدك الأول في أفضل صالون حلاقة"
+              />
               <Navbar />
-              <main className="pt-16">
+              <main id="main-content" className="pt-16">
                 <Register />
               </main>
-              <Footer />
             </>
           }
         />
@@ -124,11 +123,14 @@ const AppContent = () => {
           path="/booking"
           element={
             <ProtectedRoute>
+              <SEOHead
+                title="حجز موعد - Ali Barber Shop"
+                description="احجز موعدك الآن واختر الخدمة والوقت المناسب لك"
+              />
               <Navbar />
-              <main className="pt-16">
+              <main id="main-content" className="pt-16">
                 <BookingSystem />
               </main>
-              <Footer />
             </ProtectedRoute>
           }
         />
@@ -136,11 +138,14 @@ const AppContent = () => {
           path="/profile"
           element={
             <ProtectedRoute>
+              <SEOHead
+                title="الملف الشخصي - Ali Barber Shop"
+                description="إدارة ملفك الشخصي ومواعيدك وتاريخ زياراتك"
+              />
               <Navbar />
-              <main className="pt-16">
+              <main id="main-content" className="pt-16">
                 <Profile />
               </main>
-              <Footer />
             </ProtectedRoute>
           }
         />
@@ -150,7 +155,13 @@ const AppContent = () => {
           path="/dashboard"
           element={
             <DashboardRoute requiredRole="admin">
-              <Dashboard />
+              <SEOHead
+                title="لوحة التحكم - Ali Barber Shop"
+                description="إدارة الصالون ومتابعة الأداء والإحصائيات"
+              />
+              <main id="main-content">
+                <Dashboard />
+              </main>
             </DashboardRoute>
           }
         />
@@ -158,7 +169,13 @@ const AppContent = () => {
           path="/dashboard/appointments"
           element={
             <DashboardRoute>
-              <DashboardAppointments />
+              <SEOHead
+                title="إدارة المواعيد - Ali Barber Shop"
+                description="عرض وإدارة جميع مواعيد الصالون"
+              />
+              <main id="main-content">
+                <DashboardAppointments />
+              </main>
             </DashboardRoute>
           }
         />
@@ -166,7 +183,13 @@ const AppContent = () => {
           path="/dashboard/services"
           element={
             <DashboardRoute requiredRole="admin">
-              <DashboardServices />
+              <SEOHead
+                title="إدارة الخدمات - Ali Barber Shop"
+                description="إضافة وتعديل خدمات الصالون"
+              />
+              <main id="main-content">
+                <DashboardServices />
+              </main>
             </DashboardRoute>
           }
         />
@@ -174,7 +197,13 @@ const AppContent = () => {
           path="/dashboard/customers"
           element={
             <DashboardRoute>
-              <DashboardCustomers />
+              <SEOHead
+                title="إدارة العملاء - Ali Barber Shop"
+                description="عرض ومتابعة معلومات العملاء"
+              />
+              <main id="main-content">
+                <DashboardCustomers />
+              </main>
             </DashboardRoute>
           }
         />
@@ -182,7 +211,13 @@ const AppContent = () => {
           path="/dashboard/barbers"
           element={
             <DashboardRoute requiredRole="admin">
-              <DashboardBarbers />
+              <SEOHead
+                title="إدارة الحلاقين - Ali Barber Shop"
+                description="إضافة ومتابعة فريق الحلاقين"
+              />
+              <main id="main-content">
+                <DashboardBarbers />
+              </main>
             </DashboardRoute>
           }
         />
@@ -190,7 +225,13 @@ const AppContent = () => {
           path="/dashboard/analytics"
           element={
             <DashboardRoute requiredRole="admin">
-              <DashboardAnalytics />
+              <SEOHead
+                title="التحليلات والتقارير - Ali Barber Shop"
+                description="نظرة شاملة على أداء الصالون والإحصائيات"
+              />
+              <main id="main-content">
+                <DashboardAnalytics />
+              </main>
             </DashboardRoute>
           }
         />
@@ -198,7 +239,13 @@ const AppContent = () => {
           path="/dashboard/time-management"
           element={
             <DashboardRoute requiredRole="admin">
-              <TimeManagement />
+              <SEOHead
+                title="إدارة الأوقات - Ali Barber Shop"
+                description="إعدادات أوقات العمل والمواعيد المتاحة"
+              />
+              <main id="main-content">
+                <TimeManagement />
+              </main>
             </DashboardRoute>
           }
         />
@@ -213,6 +260,18 @@ const AppContent = () => {
             color: "#fff",
             border: "1px solid #f59332",
           },
+          success: {
+            iconTheme: {
+              primary: "#10b981",
+              secondary: "#fff",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444",
+              secondary: "#fff",
+            },
+          },
         }}
       />
     </div>
@@ -221,13 +280,17 @@ const AppContent = () => {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <LanguageProvider>
-          <AppContent />
-        </LanguageProvider>
-      </AuthProvider>
-    </Router>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <Router>
+          <AuthProvider>
+            <LanguageProvider>
+              <AppContent />
+            </LanguageProvider>
+          </AuthProvider>
+        </Router>
+      </ErrorBoundary>
+    </HelmetProvider>
   );
 }
 

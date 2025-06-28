@@ -2,7 +2,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Clock, ArrowRight, Repeat, X } from "lucide-react";
 import { format, addDays, addWeeks, addMonths } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS, he } from "date-fns/locale";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
   const [wantRepeat, setWantRepeat] = useState(data.isRepeating || false);
@@ -13,6 +14,20 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
       occurrences: 4,
     }
   );
+  const { t, language } = useLanguage();
+
+  const getDateLocale = () => {
+    switch (language) {
+      case "ar":
+        return ar;
+      case "he":
+        return he;
+      case "en":
+        return enUS;
+      default:
+        return ar;
+    }
+  };
 
   const handleRepeatChange = (value) => {
     setWantRepeat(value);
@@ -75,19 +90,23 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
       <div className="mb-8">
         <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
           <Repeat className="w-6 h-6 ml-2" />
-          تكرار الموعد
+          {t("repeatAppointment")}
         </h3>
-        <p className="text-gray-400">هل تريد تكرار هذا الموعد؟</p>
+        <p className="text-gray-400">{t("wantToRepeatQuestion")}</p>
       </div>
 
       {/* Current Appointment Summary */}
       <div className="bg-dark-700/50 rounded-lg p-4 mb-8">
-        <h4 className="text-white font-semibold mb-3">الموعد المحدد:</h4>
+        <h4 className="text-white font-semibold mb-3">
+          {t("selectedAppointment")}
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="flex items-center text-gray-300">
             <Calendar className="w-4 h-4 ml-2" />
             {data.date &&
-              format(data.date, "EEEE، d MMMM yyyy", { locale: ar })}
+              format(data.date, "EEEE، d MMMM yyyy", {
+                locale: getDateLocale(),
+              })}
           </div>
           <div className="flex items-center text-gray-300">
             <Clock className="w-4 h-4 ml-2" />
@@ -98,7 +117,9 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
 
       {/* Repeat Options */}
       <div className="mb-8">
-        <h4 className="text-white font-semibold mb-4">خيارات التكرار:</h4>
+        <h4 className="text-white font-semibold mb-4">
+          {t("repeatOptionsTitle")}
+        </h4>
 
         <div className="space-y-4">
           <label className="flex items-center p-4 bg-dark-700/50 rounded-lg cursor-pointer hover:bg-dark-700 transition-colors">
@@ -110,8 +131,12 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
               className="ml-3 text-primary-500"
             />
             <div>
-              <span className="text-white font-medium">موعد واحد فقط</span>
-              <p className="text-gray-400 text-sm">حجز موعد واحد بدون تكرار</p>
+              <span className="text-white font-medium">
+                {t("singleAppointment")}
+              </span>
+              <p className="text-gray-400 text-sm">
+                {t("singleAppointmentDesc")}
+              </p>
             </div>
           </label>
 
@@ -124,9 +149,11 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
               className="ml-3 text-primary-500"
             />
             <div>
-              <span className="text-white font-medium">تكرار الموعد</span>
+              <span className="text-white font-medium">
+                {t("repeatAppointmentOption")}
+              </span>
               <p className="text-gray-400 text-sm">
-                حجز مواعيد متكررة بفترات منتظمة
+                {t("repeatAppointmentDesc")}
               </p>
             </div>
           </label>
@@ -142,13 +169,15 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
         >
           <div className="bg-primary-500/10 border border-primary-500/30 rounded-lg p-6">
             <h4 className="text-primary-400 font-semibold mb-4">
-              إعدادات التكرار:
+              {t("repeatSettings")}
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {/* Interval */}
               <div>
-                <label className="block text-white font-medium mb-2">كل:</label>
+                <label className="block text-white font-medium mb-2">
+                  {t("every")}:
+                </label>
                 <div className="flex items-center">
                   <button
                     onClick={() =>
@@ -178,23 +207,23 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
               {/* Unit */}
               <div>
                 <label className="block text-white font-medium mb-2">
-                  الوحدة:
+                  {t("unit")}:
                 </label>
                 <select
                   value={repeatConfig.unit}
                   onChange={(e) => handleConfigChange("unit", e.target.value)}
                   className="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
                 >
-                  <option value="day">يوم</option>
-                  <option value="week">أسبوع</option>
-                  <option value="month">شهر</option>
+                  <option value="day">{t("day")}</option>
+                  <option value="week">{t("week")}</option>
+                  <option value="month">{t("month")}</option>
                 </select>
               </div>
 
               {/* Occurrences */}
               <div>
                 <label className="block text-white font-medium mb-2">
-                  عدد المرات:
+                  {t("numberOfTimes")}:
                 </label>
                 <div className="flex items-center">
                   <button
@@ -225,43 +254,6 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
                 </div>
               </div>
             </div>
-
-            {/* Preview */}
-            <div className="bg-dark-800/50 rounded-lg p-4">
-              <h5 className="text-white font-medium mb-3">معاينة المواعيد:</h5>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {previewDates.map((date, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center text-sm"
-                  >
-                    <span className="text-gray-300">
-                      {index + 1}.{" "}
-                      {format(date, "EEEE، d MMMM yyyy", { locale: ar })} -{" "}
-                      {data.time}
-                    </span>
-                    <span className="text-primary-500 font-medium">
-                      {(data.service?.price || 0) * (data.peopleCount || 1)}{" "}
-                      ريال
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-dark-600 mt-4 pt-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-white font-semibold">
-                    المجموع الكلي:
-                  </span>
-                  <span className="text-primary-500 font-bold text-lg">
-                    {totalCost} ريال
-                  </span>
-                </div>
-                <p className="text-gray-400 text-sm mt-1">
-                  {previewDates.length} موعد × {data.peopleCount || 1} شخص
-                </p>
-              </div>
-            </div>
           </div>
         </motion.div>
       )}
@@ -273,14 +265,14 @@ const RepeatOptions = ({ data, updateData, onNext, onPrev }) => {
           className="flex items-center px-6 py-3 text-gray-400 hover:text-white transition-colors"
         >
           <ArrowRight className="w-4 h-4 ml-2" />
-          السابق
+          {t("previous")}
         </button>
 
         <button
           onClick={handleContinue}
           className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold transition-all"
         >
-          التالي
+          {t("next")}
         </button>
       </div>
     </div>

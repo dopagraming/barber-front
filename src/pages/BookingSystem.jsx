@@ -7,10 +7,12 @@ import RepeatOptions from "../components/booking/RepeatOptions";
 import BookingConfirmation from "../components/booking/BookingConfirmation";
 import BookingSuccess from "../components/booking/BookingSuccess";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const BookingSystem = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [bookingData, setBookingData] = useState({
     service: null,
     barber: null,
@@ -53,23 +55,27 @@ const BookingSystem = () => {
   };
 
   const steps = [
-    { number: 1, title: "اختيار الخدمة", component: ServiceSelection },
-    { number: 2, title: "التاريخ والوقت", component: DateTimeSelection },
-    { number: 3, title: "خيارات التكرار", component: RepeatOptions },
-    { number: 4, title: "تأكيد الحجز", component: BookingConfirmation },
-    { number: 5, title: "تم الحجز", component: BookingSuccess },
+    { number: 1, title: t("selectService"), component: ServiceSelection },
+    { number: 2, title: t("selectDateAndTime"), component: DateTimeSelection },
+    { number: 3, title: t("repeatOptions"), component: RepeatOptions },
+    {
+      number: 4,
+      title: t("bookingConfirmation"),
+      component: BookingConfirmation,
+    },
+    { number: 5, title: t("bookingComplete"), component: BookingSuccess },
   ];
 
   const CurrentStepComponent = steps[currentStep - 1]?.component;
 
   return (
-    <div className="min-h-screen py-20">
+    <div className="min-h-screen py-20 overflow-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <p
           className="text-gray-400 mb-5 cursor-pointer"
           onClick={() => navigate("/")}
         >
-          الصفحة الرئيسية
+          {t("mainPage")}
         </p>
         {/* Progress Bar */}
         {currentStep < 6 && (
@@ -103,7 +109,7 @@ const BookingSystem = () => {
                 {steps[currentStep - 1]?.title}
               </h2>
               <p className="text-gray-400">
-                الخطوة {currentStep} من {steps.length - 1}
+                {t("step")} {currentStep} {t("of")} {steps.length - 1}
               </p>
             </div>
           </div>

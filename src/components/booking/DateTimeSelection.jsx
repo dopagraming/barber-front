@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { format, addDays, isSameDay, isToday, isBefore } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, enUS, he } from "date-fns/locale";
 import LoadingSpinner from "../LoadingSpinner";
+import { useLanguage } from "../../contexts/LanguageContext";
 import api from "../../lib/axios";
 
 const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
@@ -12,6 +13,20 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
   const [availableDays, setAvailableDays] = useState([]);
   const [availableTimes, setAvailableTimes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t, language } = useLanguage();
+
+  const getDateLocale = () => {
+    switch (language) {
+      case "ar":
+        return ar;
+      case "he":
+        return he;
+      case "en":
+        return enUS;
+      default:
+        return ar;
+    }
+  };
 
   useEffect(() => {
     fetchSchedule();
@@ -91,14 +106,14 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
     <div className="bg-dark-800/50 rounded-2xl p-8">
       <div className="mb-8">
         <h3 className="text-2xl font-bold text-white mb-4">
-          اختر التاريخ والوقت
+          {t("selectDateAndTime")}
         </h3>
       </div>
 
       {/* Date Selection */}
       <div className="mb-8">
         <h4 className="text-white font-semibold mb-4 flex items-center">
-          <Calendar className="w-5 h-5 ml-2" /> اختر التاريخ
+          <Calendar className="w-5 h-5 ml-2" /> {t("selectDate")}
         </h4>
         <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
           {dates.map((date, i) => (
@@ -115,14 +130,16 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
               }`}
             >
               <div className="text-sm font-medium">
-                {format(date, "EEE", { locale: ar })}
+                {format(date, "EEE", { locale: getDateLocale() })}
               </div>
               <div className="text-lg font-bold">{format(date, "d")}</div>
               <div className="text-xs">
-                {format(date, "MMM", { locale: ar })}
+                {format(date, "MMM", { locale: getDateLocale() })}
               </div>
               {isToday(date) && (
-                <div className="text-xs text-primary-300 mt-1">اليوم</div>
+                <div className="text-xs text-primary-300 mt-1">
+                  {t("today")}
+                </div>
               )}
             </motion.button>
           ))}
@@ -132,7 +149,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
       {/* Time Selection */}
       <div className="mb-8">
         <h4 className="text-white font-semibold mb-4 flex items-center">
-          <Clock className="w-5 h-5 ml-2" /> اختر الوقت
+          <Clock className="w-5 h-5 ml-2" /> {t("selectTime")}
         </h4>
         {availableTimes.length > 0 ? (
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
@@ -162,7 +179,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         ) : (
           <div className="text-center py-8">
             <Clock className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-400">لا توجد أوقات متاحة لهذا اليوم</p>
+            <p className="text-gray-400">{t("noAvailableSlots")}</p>
           </div>
         )}
       </div>
@@ -172,7 +189,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
           checked={data.isRepeating}
           onChange={(e) => updateData({ isRepeating: e.target.checked })}
         />
-        <span className="text-gray-400">هل تريد تكرار الحجز؟</span>
+        <span className="text-gray-400">{t("wantToRepeat")}</span>
       </label>
       {/* Buttons */}
       <div className="flex justify-between">
@@ -180,7 +197,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
           onClick={onPrev}
           className="flex items-center px-6 py-3 text-gray-400 hover:text-white transition-colors"
         >
-          <ArrowRight className="w-4 h-4 ml-2" /> السابق
+          <ArrowRight className="w-4 h-4 ml-2" /> {t("previous")}
         </button>
         <button
           onClick={() => selectedDate && selectedTime && onNext()}
@@ -191,7 +208,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
               : "bg-gray-600 text-gray-400 cursor-not-allowed"
           }`}
         >
-          التالي
+          {t("next")}
         </button>
       </div>
     </div>
