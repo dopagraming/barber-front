@@ -111,7 +111,7 @@ const DashboardLayout = ({ children }) => {
                 to="/"
                 className="flex items-center space-x-2 space-x-reverse"
               >
-                <img src="/logo.png" alt="logo" width="150px" />
+                <img src="/logo.jpg" alt="logo" width="150px" />
               </Link>
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -162,7 +162,7 @@ const DashboardLayout = ({ children }) => {
       <div className="hidden lg:flex lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:w-64 z-40 bg-dark-800/95 backdrop-blur-md border-l border-primary-500/20 flex-col">
         <div className="flex items-center justify-between p-6 border-b border-dark-700">
           <Link to="/" className="flex items-center space-x-2 space-x-reverse">
-            <img src="/logo.png" alt="logo" width="200px" />
+            <img src="/logo.jpg" alt="logo" width="200px" />
           </Link>
         </div>
 

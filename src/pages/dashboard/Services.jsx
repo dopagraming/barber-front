@@ -53,12 +53,10 @@ const DashboardServices = () => {
   const fetchServices = async () => {
     try {
       const response = await api.get("api/services");
-      console.log("Fetched services:", response.data); // Debug log
       setServices(response.data || []);
     } catch (error) {
-      console.error("Error fetching services:", error);
       toast.error("حدث خطأ في تحميل الخدمات");
-      setServices([]); // Set empty array on error
+      setServices([]);
     } finally {
       setLoading(false);
     }
@@ -71,14 +69,12 @@ const DashboardServices = () => {
         await api.put(`api/services/${editingService._id}`, formData);
         toast.success("تم تحديث الخدمة بنجاح");
       } else {
-        console.log(formData);
         await api.post("api/services", formData);
         toast.success("تم إضافة الخدمة بنجاح");
       }
       fetchServices();
       resetForm();
     } catch (error) {
-      console.error("Error saving service:", error);
       toast.error("حدث خطأ في حفظ الخدمة");
     }
   };

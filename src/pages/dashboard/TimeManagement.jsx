@@ -8,9 +8,8 @@ const TimeManagement = () => {
   const { t } = useLanguage();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [previewDate, setPreviewDate] = useState("");
-  const [slotsPreview, setSlotsPreview] = useState([]);
-
+  const [services, setServices] = useState([]);
+  const [errors, setErrors] = useState({});
   const days = [
     { id: "sunday", name: t("sunday") },
     { id: "monday", name: t("monday") },
@@ -27,12 +26,13 @@ const TimeManagement = () => {
 
   const fetchSettings = async () => {
     try {
-      const res = await api.get("api/time-management/settings");
-      console.log();
-      setSettings(res.data);
+      const [timeManagementRes, servicesRes] = await Promise.all([
+        api.get("api/time-management/settings"),
+        api.get("api/services"),
+      ]);
+      setSettings(timeManagementRes.data);
+      setServices(servicesRes.data);
     } catch (err) {
-      console.log(err);
-
       toast.error("فشل في تحميل الإعدادات");
     } finally {
       setLoading(false);
@@ -55,23 +55,36 @@ const TimeManagement = () => {
       },
     });
   };
+  const validateDayServices = () => {
+    const newErrors = {};
+    settings.workingDays.forEach((day) => {
+      if (!day.enabled) return;
+      day.services?.forEach((service, idx) => {
+        if (
+          service.startTime &&
+          service.endTime &&
+          service.startTime >= service.endTime
+        ) {
+          newErrors[`${day.id}-${idx}`] =
+            "وقت النهاية يجب أن يكون بعد وقت البداية";
+        }
+      });
+    });
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const saveSettings = async () => {
+    const isValid = validateDayServices();
+    if (!isValid) {
+      toast.error("تأكد من صحة أوقات الخدمات قبل الحفظ");
+      return;
+    }
     try {
       await api.put("api/time-management/settings", settings);
       toast.success("تم حفظ الإعدادات");
     } catch (err) {
       toast.error("فشل في حفظ الإعدادات");
-    }
-  };
-
-  const fetchPreviewSlots = async () => {
-    if (!previewDate) return;
-    try {
-      const res = await api.get(`api/time-management/slots/${previewDate}`);
-      setSlotsPreview(res.data);
-    } catch (err) {
-      toast.error("فشل في جلب المواعيد");
     }
   };
 
@@ -102,44 +115,129 @@ const TimeManagement = () => {
               </label>
             </div>
             {day.enabled && (
-              <div className="grid grid-cols-3 gap-4">
-                <input
-                  type="time"
-                  value={day.openTime}
-                  onChange={(e) =>
-                    updateSetting(day.id, "openTime", e.target.value)
-                  }
-                  className="p-2 rounded bg-dark-600 border border-dark-500"
-                />
-                <input
-                  type="time"
-                  value={day.closeTime}
-                  onChange={(e) =>
-                    updateSetting(day.id, "closeTime", e.target.value)
-                  }
-                  className="p-2 rounded bg-dark-600 border border-dark-500"
-                />
-                <input
-                  type="number"
-                  min={5}
-                  max={120}
-                  value={day.slotDuration}
-                  onChange={(e) =>
-                    updateSetting(
-                      day.id,
-                      "slotDuration",
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="p-2 rounded bg-dark-600 border border-dark-500"
-                  placeholder={t("slotDuration")}
-                />
-              </div>
+              <>
+                <div className="space-y-4">
+                  {/* Existing open/close times */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <input
+                      type="time"
+                      value={day.openTime}
+                      onChange={(e) =>
+                        updateSetting(day.id, "openTime", e.target.value)
+                      }
+                      className="p-2 rounded bg-dark-600 border border-dark-500"
+                    />
+                    <input
+                      type="time"
+                      value={day.closeTime}
+                      onChange={(e) =>
+                        updateSetting(day.id, "closeTime", e.target.value)
+                      }
+                      className="p-2 rounded bg-dark-600 border border-dark-500"
+                    />
+                  </div>
+
+                  {/* Services list per day */}
+                  {day.services?.map((serviceItem, idx) => (
+                    <div
+                      key={idx}
+                      className="grid grid-cols-4 gap-4 items-center"
+                    >
+                      <select
+                        value={serviceItem.serviceType || ""}
+                        onChange={(e) => {
+                          const newServices = [...(day.services || [])];
+                          newServices[idx] = {
+                            ...newServices[idx],
+                            serviceType: e.target.value,
+                          };
+                          updateSetting(day.id, "services", newServices);
+                        }}
+                        className="p-2 rounded bg-dark-600 border border-dark-500"
+                      >
+                        <option value="">اختر خدمة</option>
+                        {services?.map((s) => (
+                          <option key={s._id} value={s._id}>
+                            {s.nameAr}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="space-y-1">
+                        <input
+                          type="time"
+                          value={serviceItem.startTime || ""}
+                          onChange={(e) => {
+                            const newServices = [...(day.services || [])];
+                            newServices[idx] = {
+                              ...newServices[idx],
+                              startTime: e.target.value,
+                            };
+                            updateSetting(day.id, "services", newServices);
+                          }}
+                          className="p-2 rounded bg-dark-600 border border-dark-500"
+                        />
+                        {errors[`${day.id}-${idx}`] && (
+                          <p className="text-red-500 text-sm">
+                            {errors[`${day.id}-${idx}`]}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <input
+                          type="time"
+                          value={serviceItem.endTime || ""}
+                          onChange={(e) => {
+                            const newServices = [...(day.services || [])];
+                            newServices[idx] = {
+                              ...newServices[idx],
+                              endTime: e.target.value,
+                            };
+                            updateSetting(day.id, "services", newServices);
+                          }}
+                          className="p-2 rounded bg-dark-600 border border-dark-500"
+                        />
+                        {errors[`${day.id}-${idx}`] && (
+                          <p className="text-red-500 text-sm">
+                            {errors[`${day.id}-${idx}`]}
+                          </p>
+                        )}
+                      </div>
+                      {/* Optional: Delete service button */}
+                      <button
+                        onClick={() => {
+                          const newServices = (day.services || []).filter(
+                            (_, i) => i !== idx
+                          );
+                          updateSetting(day.id, "services", newServices);
+                        }}
+                        className="text-red-500"
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Add service button */}
+                  <button
+                    onClick={() => {
+                      const newServices = day.services ? [...day.services] : [];
+                      newServices.push({
+                        serviceType: "",
+                        startTime: "",
+                        endTime: "",
+                      });
+                      updateSetting(day.id, "services", newServices);
+                    }}
+                    className="px-4 py-2 bg-blue-600 rounded text-white"
+                  >
+                    {t("addService")}
+                  </button>
+                </div>
+              </>
             )}
           </div>
         ))}
       </div>
-
       <div className="bg-dark-700 p-4 rounded-lg border border-dark-600">
         <h3 className="font-semibold mb-2">{t("breakTime")}</h3>
         <label className="flex items-center space-x-2 space-x-reverse mb-2">

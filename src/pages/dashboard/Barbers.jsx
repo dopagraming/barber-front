@@ -87,7 +87,7 @@ const DashboardBarbers = () => {
       completedAppointments,
       totalEarnings,
       todayAppointments,
-      rating: 4.8, // Mock rating
+      rating: 4.8,
     };
   };
 
@@ -95,7 +95,6 @@ const DashboardBarbers = () => {
     e.preventDefault();
     try {
       if (editingBarber) {
-        // For editing, we would need an update endpoint
         toast.info("تعديل الحلاق غير متاح حالياً");
       } else {
         await api.post("api/barbers", {

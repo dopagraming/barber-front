@@ -40,7 +40,13 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
     try {
       const response = await api.get("api/time-management/settings");
       const { workingDays } = response.data;
-      setAvailableDays(workingDays.filter((day) => day.enabled));
+      setAvailableDays(
+        workingDays.filter(
+          (day) =>
+            day.enabled &&
+            day.services?.some((s) => s.serviceType === data.service._id)
+        )
+      );
     } catch (err) {
       console.error("Failed to load schedule:", err);
     } finally {
@@ -52,8 +58,11 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
     try {
       const formatted = date.toISOString().split("T")[0];
       const response = await api.get(`api/time-management/slots/${formatted}`);
+      console.log(response.data);
       const times = response.data
-        .filter((slot) => slot.available)
+        .filter(
+          (slot) => slot.available && slot.serviceType === data.service._id // only show matching service times
+        )
         .map((s) => s.time);
       setAvailableTimes(times);
     } catch (err) {
@@ -151,7 +160,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         <h4 className="text-white font-semibold mb-4 flex items-center">
           <Clock className="w-5 h-5 ml-2" /> {t("selectTime")}
         </h4>
-        {availableTimes.length > 0 ? (
+        {availableTimes.length > 0 && dates ? (
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
             {availableTimes.map((time, i) => {
               const available = isTimeSlotAvailable(time);

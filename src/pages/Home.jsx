@@ -14,7 +14,7 @@ const Home = () => {
   const [error, setError] = useState("");
 
   const validatePhone = (value) => {
-    const phoneRegex = /^05\d{8}$/; // يبدأ بـ 05 ويتكون من 10 أرقام
+    const phoneRegex = /^05\d{8}$/;
     if (!value) return t("phoneRequired");
     if (!phoneRegex.test(value)) return t("phoneInvalid");
     return "";

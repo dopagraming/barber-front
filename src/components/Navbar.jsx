@@ -22,7 +22,6 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const { t, language, changeLanguage } = useLanguage();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -31,8 +30,6 @@ const Navbar = () => {
   };
 
   console.log(user);
-
-  const isActive = (path) => location.pathname === path;
 
   const languages = [
     { code: "ar", name: "العربية" },
@@ -46,7 +43,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 space-x-reverse">
-            <img src="/logo.png" alt="logo" width="150px" />
+            <img src="/logo.jpg" alt="logo" width="150px" />
           </Link>
 
           {/* Right Side */}
@@ -54,7 +51,10 @@ const Navbar = () => {
             {/* Language Toggle */}
             <div className="relative">
               <button
-                onClick={() => setShowLangMenu(!showLangMenu)}
+                onClick={() => {
+                  setShowLangMenu(!showLangMenu);
+                  setShowUserMenu(false);
+                }}
                 className="p-2 text-gray-300 hover:text-white transition-colors flex items-center"
               >
                 <Globe className="w-5 h-5 ml-1" />
@@ -93,7 +93,10 @@ const Navbar = () => {
             {user ? (
               <div className="relative">
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={() => {
+                    setShowUserMenu(!showUserMenu);
+                    setShowLangMenu(false);
+                  }}
                   className="flex items-center space-x-2 space-x-reverse p-2 rounded-lg hover:bg-dark-800 transition-colors"
                 >
                   <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">

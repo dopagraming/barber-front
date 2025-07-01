@@ -31,6 +31,7 @@ const DashboardAppointments = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+
   const [newAppointment, setNewAppointment] = useState({
     customerName: "",
     barber: "",
@@ -44,6 +45,10 @@ const DashboardAppointments = () => {
   useEffect(() => {
     fetchData();
   }, []);
+  const refetchAppointment = async () => {
+    const res = await api.get("api/appointments");
+    setAppointments(appointmentsRes.data);
+  };
 
   const fetchData = async () => {
     try {
@@ -52,7 +57,6 @@ const DashboardAppointments = () => {
         api.get("api/services"),
         api.get("api/customers"),
       ]);
-
       setAppointments(appointmentsRes.data);
       setServices(servicesRes.data);
       setCustomers(customersRes.data);
@@ -72,6 +76,7 @@ const DashboardAppointments = () => {
       setAppointments((prev) =>
         prev.map((apt) => (apt._id === id ? { ...apt, status } : apt))
       );
+      refetchAppointment();
       toast.success("تم تحديث حالة الموعد بنجاح");
     } catch (error) {
       console.error("Error updating appointment:", error);
@@ -85,6 +90,7 @@ const DashboardAppointments = () => {
     try {
       await api.delete(`api/appointments/${id}`);
       setAppointments((prev) => prev.filter((apt) => apt._id !== id));
+      refetchAppointment();
       toast.success("تم حذف الموعد بنجاح");
     } catch (error) {
       console.error("Error deleting appointment:", error);
@@ -116,6 +122,7 @@ const DashboardAppointments = () => {
         notes: "",
         status: "confirmed",
       });
+      fetchData();
       toast.success("تم إضافة الموعد بنجاح");
     } catch (error) {
       console.error("Error adding appointment:", error);
@@ -161,8 +168,42 @@ const DashboardAppointments = () => {
     }
   };
 
-  const filteredAppointments = appointments.filter((appointment) => {
-    const matchesFilter = filter === "all" || appointment.status === filter;
+  const filteredAppointments = appointments?.filter((appointment) => {
+    // Handle filter matching
+    let matchesFilter;
+    if (filter === "all") {
+      matchesFilter = true;
+    } else if (filter === "today") {
+      try {
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date();
+        const todayStr = today.toISOString().split("T")[0];
+
+        // Safely parse appointment date
+        if (!appointment.date) {
+          matchesFilter = false;
+        } else {
+          const appointmentDate = new Date(appointment.date);
+
+          // Check if date is valid
+          if (isNaN(appointmentDate.getTime())) {
+            matchesFilter = false;
+          } else {
+            const appointmentDateStr = appointmentDate
+              .toISOString()
+              .split("T")[0];
+            matchesFilter = todayStr === appointmentDateStr;
+          }
+        }
+      } catch (e) {
+        console.error("Error processing date:", e);
+        matchesFilter = false;
+      }
+    } else {
+      matchesFilter = appointment.status === filter;
+    }
+
+    // Handle search matching
     const matchesSearch =
       appointment.customer?.name
         ?.toLowerCase()
@@ -228,7 +269,9 @@ const DashboardAppointments = () => {
                 className="bg-dark-700 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500"
               >
                 <option value="all">جميع المواعيد</option>
+                <option value="today">اليوم</option>
                 <option value="cancelled">ملغي</option>
+                <option value="confirmed">مؤكد</option>
               </select>
             </div>
           </div>
@@ -236,26 +279,14 @@ const DashboardAppointments = () => {
 
         {/* Appointments List */}
         <div className="space-y-4">
-          {filteredAppointments.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-dark-800/50 rounded-lg p-8 text-center"
-            >
-              <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-white font-semibold text-lg mb-2">
-                لا توجد مواعيد
-              </h3>
-              <p className="text-gray-400">لا توجد مواعيد تطابق معايير البحث</p>
-            </motion.div>
-          ) : (
+          {filteredAppointments?.length > 0 ? (
             filteredAppointments.map((appointment, index) => (
               <motion.div
                 key={appointment._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-dark-800/50 rounded-lg p-6 border border-dark-600 hover:border-primary-500/50 transition-all"
+                className="bg-dark-800/50 rounded-lg p-6 border border-dark-600 hover:border-primary-500/50 transition-all mb-6"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-4 space-x-reverse">
@@ -266,12 +297,11 @@ const DashboardAppointments = () => {
                     </div>
                     <div>
                       <h3 className="text-white font-semibold text-lg">
-                        {appointment.customerName ||
-                          appointment.customer?.name?.charAt(0)}
+                        {appointment.customerName || appointment.customer?.name}
                       </h3>
                       <p className="text-gray-400 text-sm">
                         {appointment.service?.nameAr} -{" "}
-                        {appointment.barber?.name}{" "}
+                        {appointment.barber?.name}
                       </p>
                     </div>
                   </div>
@@ -317,7 +347,6 @@ const DashboardAppointments = () => {
                   </div>
                 )}
 
-                {/* Action Buttons */}
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() =>
@@ -343,6 +372,8 @@ const DashboardAppointments = () => {
                 </div>
               </motion.div>
             ))
+          ) : (
+            <p className="text-gray-400 text-center py-10">لا توجد مواعيد</p>
           )}
         </div>
 
