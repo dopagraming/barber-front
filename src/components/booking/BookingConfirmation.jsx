@@ -34,6 +34,18 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
     }
   };
 
+  const generateTimeSlots = (startTime, duration, count) => {
+    const slots = [];
+    let current = new Date(`2000-01-01T${startTime}:00`);
+
+    for (let i = 0; i < count; i++) {
+      slots.push(current.toTimeString().slice(0, 5));
+      current = new Date(current.getTime() + duration * 60000);
+    }
+
+    return slots;
+  };
+
   const handleNotesChange = (e) => {
     const value = e.target.value;
     setNotes(value);
@@ -72,33 +84,48 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
   const handleConfirmBooking = async () => {
     setLoading(true);
     try {
-      const appointmentData = {
-        service: data.service._id,
-        date: data.date,
-        time: data.time,
-        notes: notes,
-        peopleCount: data.peopleCount || 1,
-        totalPrice: data.service.price * (data.peopleCount || 1),
-        isRepeating: data.isRepeating || false,
-        repeatConfig: data.isRepeating ? data.repeatConfig : undefined,
-      };
+      const appointmentDates = generateAppointmentDates();
+      const serviceDuration = data.service?.duration || 20;
+      const peopleCount = data.peopleCount || 1;
 
-      const response = await api.post("api/appointments", appointmentData);
+      const allAppointments = [];
 
-      if (response.data) {
-        updateData({
-          appointmentId: Array.isArray(response.data)
-            ? response.data[0]._id
-            : response.data._id,
-          allAppointments: response.data,
-        });
-        toast.success(
-          data.isRepeating
-            ? t("appointmentsBookedSuccess")
-            : t("appointmentBookedSuccess")
+      for (const appointmentDate of appointmentDates) {
+        const timeSlots = generateTimeSlots(
+          data.time,
+          serviceDuration,
+          peopleCount
         );
-        onNext();
+
+        for (let i = 0; i < timeSlots.length; i++) {
+          const appointmentData = {
+            service: data.service._id,
+            date: appointmentDate,
+            time: timeSlots[i],
+            notes,
+            peopleCount: 1,
+            totalPrice: data.service.price,
+            isRepeating: data.isRepeating || false,
+            repeatConfig: data.isRepeating ? data.repeatConfig : undefined,
+            serviceDuration, // Important for slot overlap checks
+          };
+
+          const response = await api.post("api/appointments", appointmentData);
+          allAppointments.push(response.data);
+        }
       }
+
+      updateData({
+        appointmentId: allAppointments[0]._id,
+        allAppointments,
+      });
+
+      toast.success(
+        data.isRepeating
+          ? t("appointmentsBookedSuccess")
+          : t("appointmentBookedSuccess")
+      );
+      onNext();
     } catch (error) {
       console.error("Error creating appointment:", error);
       toast.error(t("appointmentBookingError"));
