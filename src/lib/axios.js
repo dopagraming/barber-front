@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: 'https://intense-thicket-94147-92c107ce6fcd.herokuapp.com/',
-    // baseURL: 'http://localhost:8090/',
+    // baseURL: 'https://intense-thicket-94147-92c107ce6fcd.herokuapp.com/',
+    baseURL: 'http://localhost:8090/',
 });
 api.interceptors.request.use(
     (config) => {

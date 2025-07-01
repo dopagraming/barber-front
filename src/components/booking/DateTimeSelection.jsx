@@ -72,12 +72,12 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
   };
 
   const generateDates = () => {
-    const today = new Date();
+    const startDate = new Date("2025-07-06");
     const results = [];
     const allowed = new Set(availableDays.map((d) => d.id));
 
     for (let i = 0; i < 60; i++) {
-      const date = addDays(today, i);
+      const date = addDays(startDate, i);
       const dayName = date
         .toLocaleDateString("en-US", { weekday: "long" })
         .toLowerCase();
