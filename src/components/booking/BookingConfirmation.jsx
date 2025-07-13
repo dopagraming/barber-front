@@ -76,10 +76,6 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
   };
 
   const appointmentDates = generateAppointmentDates();
-  const totalCost =
-    (data.service?.price || 0) *
-    (data.peopleCount || 1) *
-    appointmentDates.length;
 
   const handleConfirmBooking = async () => {
     setLoading(true);
@@ -107,7 +103,8 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
             totalPrice: data.service.price,
             isRepeating: data.isRepeating || false,
             repeatConfig: data.isRepeating ? data.repeatConfig : undefined,
-            serviceDuration, // Important for slot overlap checks
+            serviceDuration,
+            status: "confirmed",
           };
 
           const response = await api.post("api/appointments", appointmentData);

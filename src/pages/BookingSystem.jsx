@@ -84,7 +84,7 @@ const BookingSystem = () => {
               {steps.slice(0, 5).map((step, index) => (
                 <div key={step.number} className="flex items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
+                    className={`w-5 h-5 md:w-10 md:h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
                       currentStep >= step.number
                         ? "bg-primary-500 text-white"
                         : "bg-dark-700 text-gray-400"
@@ -94,7 +94,7 @@ const BookingSystem = () => {
                   </div>
                   {index < 4 && (
                     <div
-                      className={`h-1 w-16 mx-2 transition-all ${
+                      className={`h-1 w-5 md:w-16 mx-2 transition-all ${
                         currentStep > step.number
                           ? "bg-primary-500"
                           : "bg-dark-700"

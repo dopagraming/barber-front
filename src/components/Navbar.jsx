@@ -11,17 +11,60 @@ import {
   Globe,
   BarChart3,
   Clock,
+  HomeIcon,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useRef, useEffect } from "react";
 
 const Navbar = () => {
+  const langMenuRef = useRef(null);
+  const userMenuRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const { user, logout } = useAuth();
   const { t, language, changeLanguage } = useLanguage();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        langMenuRef.current &&
+        !langMenuRef.current.contains(event.target) &&
+        showLangMenu
+      ) {
+        setShowLangMenu(false);
+      }
+
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target) &&
+        showUserMenu
+      ) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showLangMenu, showUserMenu]);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        const data = event.data;
+        if (data?.type === "PUSH_NOTIFICATION") {
+          setNotifications((prev) => [...prev, data]);
+        }
+      });
+    }
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -43,7 +86,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 space-x-reverse">
-            <img src="/logo.jpg" alt="logo" width="150px" />
+            <img src="/logo.jpg" alt="logo" width="50px" />
           </Link>
 
           {/* Right Side */}
@@ -63,6 +106,7 @@ const Navbar = () => {
               <AnimatePresence>
                 {showLangMenu && (
                   <motion.div
+                    ref={langMenuRef}
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -85,6 +129,51 @@ const Navbar = () => {
                         {lang.name}
                       </button>
                     ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications((prev) => !prev)}
+                className="p-2 text-gray-300 hover:text-white relative"
+              >
+                <Bell className="w-5 h-5" />
+                {/* Badge (optional) */}
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-72 bg-dark-800 rounded-lg shadow-xl border border-primary-500/20 py-2 z-50"
+                  >
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-2 text-sm text-gray-400">
+                        لا توجد إشعارات
+                      </div>
+                    ) : (
+                      notifications.map((notification, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-2 text-sm text-white border-b border-dark-700 last:border-none"
+                        >
+                          <div className="font-medium">
+                            {notification.title}
+                          </div>
+                          <div className="text-gray-400 text-xs">
+                            {notification.body}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -118,6 +207,7 @@ const Navbar = () => {
                 <AnimatePresence>
                   {showUserMenu && (
                     <motion.div
+                      ref={userMenuRef}
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -130,6 +220,14 @@ const Navbar = () => {
                       >
                         <User className="w-4 h-4" />
                         <span>{t("profile")}</span>
+                      </Link>
+                      <Link
+                        to="/"
+                        className="flex items-center space-x-2 space-x-reverse px-4 py-2 text-gray-300 hover:text-white hover:bg-dark-700 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <HomeIcon className="w-4 h-4" />
+                        <span>{t("mainPage")}</span>
                       </Link>
 
                       {(user.role === "admin" || user.role === "barber") && (
@@ -213,7 +311,7 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-dark-800 border-t border-primary-500/20"
+            className="md:hidden bg-dark-800 border-t border-primary-500/20 shadow-[0_8px_20px_rgba(255,255,255,0.2)]"
           >
             <div className="px-4 py-4 space-y-4">
               {/* Language Selection */}
@@ -249,6 +347,13 @@ const Navbar = () => {
                     onClick={() => setIsOpen(false)}
                   >
                     {t("profile")}
+                  </Link>
+                  <Link
+                    to="/"
+                    className="block text-gray-300 hover:text-white transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {t("mainPage")}
                   </Link>
                   {(user.role === "admin" || user.role === "barber") && (
                     <>

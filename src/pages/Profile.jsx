@@ -15,6 +15,7 @@ import {
   TrendingUp,
   DollarSign,
   Award,
+  HomeIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ar, enUS, he } from "date-fns/locale";
@@ -139,6 +140,27 @@ const Profile = () => {
   };
 
   const handleAppointmentUpdate = async (appointmentId, updates) => {
+    let app = appointments.find((a) => a._id == appointmentId);
+    if (!app) {
+      toast.error("Appointment not found.");
+      return;
+    }
+    if (user.role === "customer") {
+      const appointmentDate = new Date(app.date);
+      const today = new Date();
+
+      appointmentDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+
+      const msInDay = 24 * 60 * 60 * 1000;
+      const diffDays = Math.floor((appointmentDate - today) / msInDay);
+
+      if (diffDays < 1) {
+        toast.error(t("cancelAppError"));
+        return;
+      }
+    }
+
     try {
       const response = await api.put(
         `api/appointments/${appointmentId}`,
@@ -154,30 +176,26 @@ const Profile = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "confirmed":
-        return "text-green-400 bg-green-400/10";
-      case "pending":
-        return "text-yellow-400 bg-yellow-400/10";
-      case "completed":
-        return "text-blue-400 bg-blue-400/10";
-      case "cancelled":
-        return "text-red-400 bg-red-400/10";
-      default:
-        return "text-gray-400 bg-gray-400/10";
-    }
-  };
-
-  const getStatusText = (status) => {
-    return t(status);
-  };
-
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen py-20">
+    <div className={`min-h-screen py-20 relative`}>
+      <div
+        className={
+          (editMode || showPasswordForm) &&
+          "absolute w-full h-full left-0 top-0 bg-dark-800/80"
+        }
+      ></div>
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          className="flex items-center space-x-2 space-x-reverse px-4 py-2 text-gray-300 hover:text-white transition-colors"
+          onClick={() => setShowUserMenu(false)}
+        >
+          <HomeIcon className="w-4 h-4" />
+          <span>{t("mainPage")}</span>
+        </Link>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -205,6 +223,9 @@ const Profile = () => {
                   {user?.name}
                 </h1>
                 <div className="flex items-center space-x-4 space-x-reverse text-gray-400 flex-wrap">
+                  {user.userName && (
+                    <div className="flex items-center">@{user?.userName}</div>
+                  )}
                   <div className="flex items-center">
                     <Mail className="w-4 h-4 ml-1" />
                     {user?.email}
@@ -234,89 +255,12 @@ const Profile = () => {
           </div>
         </motion.div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-dark-800/50 rounded-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">
-                  {t("totalAppointments")}
-                </p>
-                <p className="text-white text-2xl font-bold">
-                  {stats.totalAppointments || 0}
-                </p>
-              </div>
-              <Calendar className="w-8 h-8 text-blue-500" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-dark-800/50 rounded-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">
-                  {t("completedAppointments")}
-                </p>
-                <p className="text-white text-2xl font-bold">
-                  {stats.completedAppointments || 0}
-                </p>
-              </div>
-              <Award className="w-8 h-8 text-green-500" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-dark-800/50 rounded-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">
-                  {t("pendingAppointments")}
-                </p>
-                <p className="text-white text-2xl font-bold">
-                  {stats.pendingAppointments || 0}
-                </p>
-              </div>
-              <Clock className="w-8 h-8 text-yellow-500" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-dark-800/50 rounded-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">{t("totalSpent")}</p>
-                <p className="text-white text-2xl font-bold">
-                  {stats.totalAmount || 0} {t("currency")}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-primary-500" />
-            </div>
-          </motion.div>
-        </div>
-
         {/* Edit Profile Form */}
         {editMode && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            className="bg-dark-800/50 rounded-lg p-6 mb-8"
+            className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-dark-800 rounded-lg p-6 mb-8 w-[80%] "
           >
             <h3 className="text-white font-semibold text-lg mb-6">
               {t("editPersonalProfile")}
@@ -339,34 +283,19 @@ const Profile = () => {
                     className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-white font-medium mb-2">
-                  {t("phone")}
-                </label>
-                <input
-                  type="tel"
-                  value={profileData.phone}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, phone: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-white font-medium mb-2">
-                  {t("profilePictureUrl")}
-                </label>
-                <input
-                  type="url"
-                  value={profileData.avatar}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, avatar: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                />
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    {t("phone")}
+                  </label>
+                  <input
+                    type="tel"
+                    value={profileData.phone}
+                    onChange={(e) =>
+                      setProfileData({ ...profileData, phone: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end space-x-4 space-x-reverse">
@@ -394,7 +323,7 @@ const Profile = () => {
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            className="bg-dark-800/50 rounded-lg p-6 mb-8"
+            className="absolute left-1/2 top -translate-x-1/2 -translate-y-1/2 bg-dark-800 rounded-lg p-6 mb-8 w-[80%]"
           >
             <h3 className="text-white font-semibold text-lg mb-6">
               {t("changePassword")}
@@ -530,27 +459,9 @@ const Profile = () => {
 
         {/* Tabs */}
         <div className="flex space-x-4 space-x-reverse mb-8">
-          <button
-            onClick={() => setActiveTab("appointments")}
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
-              activeTab === "appointments"
-                ? "bg-primary-500 text-white"
-                : "bg-dark-700 text-gray-300 hover:bg-dark-600"
-            }`}
-          >
+          <button className="px-6 py-3 rounded-lg font-medium transition-all bg-primary-500 text-white">
             <Calendar className="w-4 h-4 inline ml-2" />
             {t("myAppointments")}
-          </button>
-          <button
-            onClick={() => setActiveTab("history")}
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
-              activeTab === "history"
-                ? "bg-primary-500 text-white"
-                : "bg-dark-700 text-gray-300 hover:bg-dark-600"
-            }`}
-          >
-            <Clock className="w-4 h-4 inline ml-2" />
-            {t("appointmentHistory")}
           </button>
         </div>
 
@@ -561,183 +472,94 @@ const Profile = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {activeTab === "appointments" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                {t("upcomingAppointments")}
-              </h2>
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              {t("upcomingAppointments")}
+            </h2>
 
-              {appointments.filter(
-                (apt) =>
-                  apt.status !== "completed" && apt.status !== "cancelled"
-              ).length === 0 ? (
-                <div className="bg-dark-800/50 rounded-lg p-8 text-center">
-                  <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold text-lg mb-2">
-                    {t("noUpcomingAppointments")}
-                  </h3>
-                  <p className="text-gray-400 mb-6">
-                    {t("bookNowEnjoyService")}
-                  </p>
-                  <Link
-                    to="/booking"
-                    className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-medium transition-all inline-block"
-                  >
-                    {t("bookNewAppointment")}
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid gap-6">
-                  {appointments
-                    .filter(
-                      (apt) =>
-                        apt.status !== "completed" && apt.status !== "cancelled"
-                    )
-                    .map((appointment) => (
-                      <div
-                        key={appointment._id}
-                        className="bg-dark-800/50 rounded-lg p-6"
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-4 space-x-reverse">
-                            <div className="w-12 h-12 bg-primary-500/20 rounded-lg flex items-center justify-center">
-                              <Calendar className="w-6 h-6 text-primary-500" />
-                            </div>
-                            <div>
-                              <h3 className="text-white font-semibold text-lg">
-                                {appointment.service?.nameAr}
-                              </h3>
-                            </div>
+            {appointments.filter(
+              (apt) => apt.status !== "completed" && apt.status !== "cancelled"
+            ).length === 0 ? (
+              <div className="bg-dark-800/50 rounded-lg p-8 text-center">
+                <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-white font-semibold text-lg mb-2">
+                  {t("noUpcomingAppointments")}
+                </h3>
+                <p className="text-gray-400 mb-6">{t("bookNowEnjoyService")}</p>
+                <Link
+                  to="/booking"
+                  className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-medium transition-all inline-block"
+                >
+                  {t("bookNewAppointment")}
+                </Link>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {appointments
+                  .filter(
+                    (apt) =>
+                      apt.status !== "completed" && apt.status !== "cancelled"
+                  )
+                  .map((appointment) => (
+                    <div
+                      key={appointment._id}
+                      className="bg-dark-800/50 rounded-lg p-6"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-4 space-x-reverse">
+                          <div className="w-12 h-12 bg-primary-500/20 rounded-lg flex items-center justify-center">
+                            <Calendar className="w-6 h-6 text-primary-500" />
                           </div>
-                          <div className="flex items-center space-x-3 space-x-reverse">
-                            <button
-                              onClick={() =>
-                                handleAppointmentUpdate(appointment._id, {
-                                  status: "cancelled",
-                                })
-                              }
-                              className="text-red-400 hover:text-red-300 px-3 py-1 rounded-lg hover:bg-red-400/10 transition-all text-sm"
-                            >
-                              {t("cancel")}
-                            </button>
+                          <div>
+                            <h3 className="text-white font-semibold text-lg">
+                              {appointment.service?.nameAr}
+                            </h3>
                           </div>
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                          <div className="flex items-center text-gray-400">
-                            <Calendar className="w-4 h-4 ml-2" />
-                            {format(
-                              new Date(appointment.date),
-                              "EEEE، d MMMM yyyy",
-                              { locale: getDateLocale() }
-                            )}
-                          </div>
-                          <div className="flex items-center text-gray-400">
-                            <Clock className="w-4 h-4 ml-2" />
-                            {appointment.time}
-                          </div>
-                          <div className="flex items-center text-primary-500 font-semibold">
-                            {appointment.totalPrice} {t("currency")}
-                          </div>
+                        <div className="flex items-center space-x-3 space-x-reverse">
+                          <button
+                            onClick={() =>
+                              handleAppointmentUpdate(appointment._id, {
+                                status: "cancelled",
+                              })
+                            }
+                            className="text-red-400 hover:text-red-300 px-3 py-1 rounded-lg hover:bg-red-400/10 transition-all text-sm"
+                          >
+                            {t("cancel")}
+                          </button>
                         </div>
-
-                        {appointment.notes && (
-                          <div className="mt-4 p-3 bg-dark-700/50 rounded-lg">
-                            <p className="text-gray-300 text-sm">
-                              {appointment.notes}
-                            </p>
-                          </div>
-                        )}
                       </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          )}
 
-          {activeTab === "history" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                {t("appointmentHistory")}
-              </h2>
-
-              {appointments.filter((apt) => apt.status === "completed")
-                .length === 0 ? (
-                <div className="bg-dark-800/50 rounded-lg p-8 text-center">
-                  <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold text-lg mb-2">
-                    {t("noAppointmentHistory")}
-                  </h3>
-                  <p className="text-gray-400">{t("historyWillAppear")}</p>
-                </div>
-              ) : (
-                <div className="grid gap-6">
-                  {appointments
-                    .filter((apt) => apt.status === "completed")
-                    .map((appointment) => (
-                      <div
-                        key={appointment._id}
-                        className="bg-dark-800/50 rounded-lg p-6"
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-4 space-x-reverse">
-                            <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                              <Star className="w-6 h-6 text-green-500" />
-                            </div>
-                            <div>
-                              <h3 className="text-white font-semibold text-lg">
-                                {appointment.service?.nameAr}
-                              </h3>
-                              <p className="text-gray-400">
-                                {t("with")} {appointment.barber?.name}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-left">
-                            <div className="text-primary-500 font-semibold">
-                              {appointment.totalPrice} {t("currency")}
-                            </div>
-                            {appointment.rating && (
-                              <div className="flex items-center mt-1">
-                                {[...Array(appointment.rating)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className="w-4 h-4 text-yellow-500 fill-current"
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center text-gray-400">
+                          <Calendar className="w-4 h-4 ml-2" />
+                          {format(
+                            new Date(appointment.date),
+                            "EEEE، d MMMM yyyy",
+                            { locale: getDateLocale() }
+                          )}
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-400">
-                          <div className="flex items-center">
-                            <Calendar className="w-4 h-4 ml-2" />
-                            {format(
-                              new Date(appointment.date),
-                              "EEEE، d MMMM yyyy",
-                              { locale: getDateLocale() }
-                            )}
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 ml-2" />
-                            {appointment.time}
-                          </div>
+                        <div className="flex items-center text-gray-400">
+                          <Clock className="w-4 h-4 ml-2" />
+                          {appointment.time}
                         </div>
-
-                        {appointment.review && (
-                          <div className="mt-4 p-3 bg-dark-700/50 rounded-lg">
-                            <p className="text-gray-300 text-sm">
-                              {appointment.review}
-                            </p>
-                          </div>
-                        )}
+                        <div className="flex items-center text-primary-500 font-semibold">
+                          {appointment.totalPrice} {t("currency")}
+                        </div>
                       </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          )}
+
+                      {appointment.notes && (
+                        <div className="mt-4 p-3 bg-dark-700/50 rounded-lg">
+                          <p className="text-gray-300 text-sm">
+                            {appointment.notes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </motion.div>
       </div>
     </div>

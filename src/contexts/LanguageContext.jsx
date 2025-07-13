@@ -241,6 +241,7 @@ const translations = {
     slotDuration: "مدة الموعد بالدقائق",
     breakTime: "وقت الاستراحة",
     saveSettings: "حفظ الإعدادات",
+    booked: "محجوز",
 
     // Days of week
     sunday: "الأحد",
@@ -290,6 +291,10 @@ const translations = {
     operationFailed: "فشلت العملية",
     pleaseWait: "يرجى الانتظار...",
     tryAgain: "حاول مرة أخرى",
+
+    // Errors
+
+    cancelAppError: "يمكنك إلغاء موعدك قبل يوم واحد على الأقل. (اتصل بالحلاق)",
   },
   en: {
     // Navigation
@@ -526,6 +531,7 @@ const translations = {
     slotDuration: "Slot Duration in Minutes",
     breakTime: "Break Time",
     saveSettings: "Save Settings",
+    booked: "Booked",
 
     // Days of week
     sunday: "Sunday",
@@ -575,6 +581,10 @@ const translations = {
     operationFailed: "Operation failed",
     pleaseWait: "Please wait...",
     tryAgain: "Try again",
+
+    // Errors
+    cancelAppError:
+      "You can only cancel your appointment at least 1 day in advance. (call the barber)",
   },
   he: {
     // Navigation
@@ -685,6 +695,7 @@ const translations = {
     step: "שלב",
     of: "מתוך",
     mainPage: "עמוד ראשי",
+    booked: "שָׁמוּר",
 
     // Service Selection
     selectRequiredService: "בחר את השירות הנדרש",
@@ -856,6 +867,11 @@ const translations = {
     pleaseWait: "אנא המתן...",
     tryAgain: "נסה שוב",
   },
+
+  //Errors
+
+  cancelAppError:
+    "Уара иулшоит уеиқәшәара мышкы заанаҵ мацара. (ахцәыҟаҵаҩ уиԥхьа)",
 };
 
 export const LanguageProvider = ({ children }) => {

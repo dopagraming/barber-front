@@ -11,8 +11,8 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
   const [selectedDate, setSelectedDate] = useState(data.date || new Date());
   const [selectedTime, setSelectedTime] = useState(data.time || null);
   const [availableDays, setAvailableDays] = useState([]);
-  const [availableTimes, setAvailableTimes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [availableTimes, setAvailableTimes] = useState([]);
   const { t, language } = useLanguage();
 
   const getDateLocale = () => {
@@ -58,13 +58,15 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
     try {
       const formatted = date.toISOString().split("T")[0];
       const response = await api.get(`api/time-management/slots/${formatted}`);
-      console.log(response.data);
-      const times = response.data
+      const allSlots = response.data;
+
+      const available = allSlots
         .filter(
-          (slot) => slot.available && slot.serviceType === data.service._id // only show matching service times
+          (slot) => slot.available && slot.serviceType === data.service._id
         )
-        .map((s) => s.time);
-      setAvailableTimes(times);
+        .map((slot) => slot.time);
+
+      setAvailableTimes(available);
     } catch (err) {
       console.error("Failed to load time slots:", err);
       setAvailableTimes([]);
@@ -72,7 +74,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
   };
 
   const generateDates = () => {
-    const startDate = new Date("2025-07-06");
+    const startDate = new Date();
     const results = [];
     const allowed = new Set(availableDays.map((d) => d.id));
 
@@ -162,28 +164,25 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         </h4>
         {availableTimes.length > 0 && dates ? (
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-            {availableTimes.map((time, i) => {
-              const available = isTimeSlotAvailable(time);
-              return (
+            {availableTimes
+              .filter((time) => isTimeSlotAvailable(time))
+              .sort((a, b) => a.localeCompare(b))
+              .map((time, i) => (
                 <motion.button
                   key={time}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.2, delay: i * 0.02 }}
-                  onClick={() => available && handleTimeSelect(time)}
-                  disabled={!available}
+                  onClick={() => handleTimeSelect(time)}
                   className={`p-3 rounded-lg text-center transition-all ${
                     selectedTime === time
                       ? "bg-primary-500 text-white"
-                      : available
-                      ? "bg-dark-700 text-gray-300 hover:bg-dark-600"
-                      : "bg-dark-800 text-gray-600 cursor-not-allowed"
+                      : "bg-dark-700 text-gray-300 hover:bg-dark-600"
                   }`}
                 >
-                  {time}
+                  <div>{time}</div>
                 </motion.button>
-              );
-            })}
+              ))}
           </div>
         ) : (
           <div className="text-center py-8">
@@ -192,6 +191,8 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
           </div>
         )}
       </div>
+
+      {/* Repeat checkbox */}
       <label className="flex items-center gap-2 mt-4">
         <input
           type="checkbox"
@@ -200,8 +201,9 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         />
         <span className="text-gray-400">{t("wantToRepeat")}</span>
       </label>
+
       {/* Buttons */}
-      <div className="flex justify-between">
+      <div className="flex justify-between mt-6">
         <button
           onClick={onPrev}
           className="flex items-center px-6 py-3 text-gray-400 hover:text-white transition-colors"

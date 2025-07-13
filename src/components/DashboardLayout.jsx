@@ -13,6 +13,7 @@ import {
   Home,
   ChevronLeft,
   LogOut,
+  NotebookIcon,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -70,6 +71,18 @@ const DashboardLayout = ({ children }) => {
       icon: Clock,
       roles: ["admin"],
     },
+    {
+      name: "تقويم",
+      href: "/dashboard/calender",
+      icon: Calendar,
+      roles: ["admin"],
+    },
+    {
+      name: "الأشعارات",
+      href: "/dashboard/notifications",
+      icon: NotebookIcon,
+      roles: ["admin"],
+    },
   ];
 
   const filteredNavigation = navigationItems.filter((item) =>
@@ -111,7 +124,7 @@ const DashboardLayout = ({ children }) => {
                 to="/"
                 className="flex items-center space-x-2 space-x-reverse"
               >
-                <img src="/logo.jpg" alt="logo" width="150px" />
+                <img src="/logo.jpg" alt="logo" width="50px" />
               </Link>
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -121,7 +134,7 @@ const DashboardLayout = ({ children }) => {
               </button>
             </div>
 
-            <nav className="flex-1 px-4 py-6 space-y-2">
+            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
               {filteredNavigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -160,9 +173,9 @@ const DashboardLayout = ({ children }) => {
 
       {/* Desktop Sidebar (Right Side) */}
       <div className="hidden lg:flex lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:w-64 z-40 bg-dark-800/95 backdrop-blur-md border-l border-primary-500/20 flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-dark-700">
+        <div className="flex items-center justify-center p-6 border-b border-dark-700">
           <Link to="/" className="flex items-center space-x-2 space-x-reverse">
-            <img src="/logo.jpg" alt="logo" width="200px" />
+            <img src="/logo.jpg" alt="logo" width="50px" />
           </Link>
         </div>
 

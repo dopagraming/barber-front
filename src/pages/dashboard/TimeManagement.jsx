@@ -10,15 +10,6 @@ const TimeManagement = () => {
   const [loading, setLoading] = useState(true);
   const [services, setServices] = useState([]);
   const [errors, setErrors] = useState({});
-  const days = [
-    { id: "sunday", name: t("sunday") },
-    { id: "monday", name: t("monday") },
-    { id: "tuesday", name: t("tuesday") },
-    { id: "wednesday", name: t("wednesday") },
-    { id: "thursday", name: t("thursday") },
-    { id: "friday", name: t("friday") },
-    { id: "saturday", name: t("saturday") },
-  ];
 
   useEffect(() => {
     fetchSettings();
@@ -46,15 +37,6 @@ const TimeManagement = () => {
     setSettings({ ...settings, workingDays: updated });
   };
 
-  const updateBreakTime = (key, value) => {
-    setSettings({
-      ...settings,
-      breakTime: {
-        ...settings.breakTime,
-        [key]: value,
-      },
-    });
-  };
   const validateDayServices = () => {
     const newErrors = {};
     settings.workingDays.forEach((day) => {
@@ -117,32 +99,9 @@ const TimeManagement = () => {
             {day.enabled && (
               <>
                 <div className="space-y-4">
-                  {/* Existing open/close times */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <input
-                      type="time"
-                      value={day.openTime}
-                      onChange={(e) =>
-                        updateSetting(day.id, "openTime", e.target.value)
-                      }
-                      className="p-2 rounded bg-dark-600 border border-dark-500"
-                    />
-                    <input
-                      type="time"
-                      value={day.closeTime}
-                      onChange={(e) =>
-                        updateSetting(day.id, "closeTime", e.target.value)
-                      }
-                      className="p-2 rounded bg-dark-600 border border-dark-500"
-                    />
-                  </div>
-
                   {/* Services list per day */}
                   {day.services?.map((serviceItem, idx) => (
-                    <div
-                      key={idx}
-                      className="grid grid-cols-4 gap-4 items-center"
-                    >
+                    <div key={idx} className="flex flex-wrap justify-between">
                       <select
                         value={serviceItem.serviceType || ""}
                         onChange={(e) => {
@@ -153,7 +112,7 @@ const TimeManagement = () => {
                           };
                           updateSetting(day.id, "services", newServices);
                         }}
-                        className="p-2 rounded bg-dark-600 border border-dark-500"
+                        className="p-2 rounded bg-dark-600 border border-dark-500 mb-2"
                       >
                         <option value="">اختر خدمة</option>
                         {services?.map((s) => (
@@ -174,7 +133,7 @@ const TimeManagement = () => {
                             };
                             updateSetting(day.id, "services", newServices);
                           }}
-                          className="p-2 rounded bg-dark-600 border border-dark-500"
+                          className="p-2 rounded bg-dark-600 border border-dark-500 mb-2"
                         />
                         {errors[`${day.id}-${idx}`] && (
                           <p className="text-red-500 text-sm">
@@ -237,33 +196,6 @@ const TimeManagement = () => {
             )}
           </div>
         ))}
-      </div>
-      <div className="bg-dark-700 p-4 rounded-lg border border-dark-600">
-        <h3 className="font-semibold mb-2">{t("breakTime")}</h3>
-        <label className="flex items-center space-x-2 space-x-reverse mb-2">
-          <span>{t("enable")}</span>
-          <input
-            type="checkbox"
-            checked={settings.breakTime.enabled}
-            onChange={(e) => updateBreakTime("enabled", e.target.checked)}
-          />
-        </label>
-        {settings.breakTime.enabled && (
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              type="time"
-              value={settings.breakTime.startTime}
-              onChange={(e) => updateBreakTime("startTime", e.target.value)}
-              className="p-2 rounded bg-dark-600 border border-dark-500"
-            />
-            <input
-              type="time"
-              value={settings.breakTime.endTime}
-              onChange={(e) => updateBreakTime("endTime", e.target.value)}
-              className="p-2 rounded bg-dark-600 border border-dark-500"
-            />
-          </div>
-        )}
       </div>
 
       <button

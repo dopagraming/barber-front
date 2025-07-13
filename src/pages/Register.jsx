@@ -152,7 +152,7 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                  placeholder={t("phoneExample2")}
+                  placeholder="0591234567"
                 />
               </div>
             </div>

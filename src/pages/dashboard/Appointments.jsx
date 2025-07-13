@@ -16,12 +16,13 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, addDays, isSameDay, isToday, isBefore } from "date-fns";
 import { ar } from "date-fns/locale";
 import axios from "axios";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import api from "../../lib/axios";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const DashboardAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -31,7 +32,9 @@ const DashboardAppointments = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-
+  const [availableTimes, setAvailableTimes] = useState([]);
+  const [bookedTimes, setBookedTimes] = useState([]);
+  const [availableDays, setAvailableDays] = useState([]);
   const [newAppointment, setNewAppointment] = useState({
     customerName: "",
     barber: "",
@@ -41,10 +44,124 @@ const DashboardAppointments = () => {
     notes: "",
     status: "confirmed",
   });
+  const { t, language } = useLanguage();
+
+  const getDateLocale = () => {
+    switch (language) {
+      case "ar":
+        return ar;
+      case "he":
+        return he;
+      case "en":
+        return enUS;
+      default:
+        return ar;
+    }
+  };
 
   useEffect(() => {
     fetchData();
+    fetchSchedule();
   }, []);
+
+  useEffect(() => {
+    if (newAppointment.date) fetchSlotsForDate(newAppointment.date);
+  }, [newAppointment.date]);
+  useEffect(() => {
+    if (newAppointment.service) fetchSchedule();
+  }, [newAppointment.service]);
+  const fetchSchedule = async () => {
+    try {
+      const response = await api.get("api/time-management/settings");
+      const { workingDays } = response.data;
+      console.log(newAppointment.service);
+      setAvailableDays(
+        workingDays.filter(
+          (day) =>
+            day.enabled &&
+            day.services?.some((s) => s.serviceType === newAppointment.service)
+        )
+      );
+    } catch (err) {
+      console.error("Failed to load schedule:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSlotsForDate = async (date) => {
+    try {
+      const formatted = date.toISOString().split("T")[0];
+      const response = await api.get(`api/time-management/slots/${formatted}`);
+      const allSlots = response.data;
+      console.log(allSlots);
+      const available = allSlots
+        .filter(
+          (slot) =>
+            slot.available && slot.serviceType === newAppointment.service
+        )
+        .map((slot) => slot.time);
+
+      const booked = allSlots
+        .filter(
+          (slot) =>
+            !slot.available && slot.serviceType === newAppointment.service
+        )
+        .map((slot) => slot.time);
+
+      setAvailableTimes(available);
+      setBookedTimes(booked);
+    } catch (err) {
+      console.error("Failed to load time slots:", err);
+      setAvailableTimes([]);
+      setBookedTimes([]);
+    }
+  };
+
+  const generateDates = () => {
+    const startDate = new Date("2025-07-06");
+    const results = [];
+    const allowed = new Set(availableDays.map((d) => d.id));
+
+    for (let i = 0; i < 60; i++) {
+      const date = addDays(startDate, i);
+      const dayName = date
+        .toLocaleDateString("en-US", { weekday: "long" })
+        .toLowerCase();
+      if (allowed.has(dayName)) results.push(date);
+      if (results.length >= 14) break;
+    }
+
+    return results;
+  };
+
+  const dates = generateDates();
+
+  const handleDateSelect = (date) => {
+    setNewAppointment({
+      ...newAppointment,
+      date: date,
+      time: null,
+    });
+    updateData({ date, time: null });
+  };
+
+  const handleTimeSelect = (time) => {
+    setNewAppointment({
+      ...newAppointment,
+      time: time,
+    });
+    updateData({ time });
+  };
+
+  const isTimeSlotAvailable = (time) => {
+    const now = new Date();
+    const [h, m] = time.split(":");
+    const slot = new Date(newAppointment.date);
+    slot.setHours(+h, +m, 0);
+    return !isBefore(slot, now);
+  };
+
   const refetchAppointment = async () => {
     const res = await api.get("api/appointments");
     setAppointments(appointmentsRes.data);
@@ -259,6 +376,9 @@ const DashboardAppointments = () => {
                 className="w-full pr-12 pl-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
               />
             </div>
+            <button className="bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow-md transition duration-200 ease-in-out">
+              حذف المواعيد المنتهية
+            </button>
 
             {/* Status Filter */}
             <div className="flex items-center space-x-4 space-x-reverse">
@@ -359,9 +479,9 @@ const DashboardAppointments = () => {
                   </button>
 
                   <div className="flex items-center space-x-2 space-x-reverse">
-                    <button className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-dark-700 transition-all">
+                    {/* <button className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-dark-700 transition-all">
                       <Edit className="w-4 h-4" />
-                    </button>
+                    </button> */}
                     <button
                       onClick={() => deleteAppointment(appointment._id)}
                       className="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-all"
@@ -430,74 +550,98 @@ const DashboardAppointments = () => {
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-white font-medium mb-2">
-                      التاريخ *
-                    </label>
-                    <input
-                      type="date"
-                      value={newAppointment.date}
-                      onChange={(e) =>
-                        setNewAppointment({
-                          ...newAppointment,
-                          date: e.target.value,
-                        })
-                      }
-                      required
-                      min={new Date().toISOString().split("T")[0]}
-                      className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white font-medium mb-2">
-                      الوقت *
-                    </label>
-                    <select
-                      value={newAppointment.time}
-                      onChange={(e) =>
-                        setNewAppointment({
-                          ...newAppointment,
-                          time: e.target.value,
-                        })
-                      }
-                      required
-                      className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500"
-                    >
-                      <option value="">اختر الوقت</option>
-                      {[
-                        "09:00",
-                        "09:30",
-                        "10:00",
-                        "10:30",
-                        "11:00",
-                        "11:30",
-                        "12:00",
-                        "12:30",
-                        "14:00",
-                        "14:30",
-                        "15:00",
-                        "15:30",
-                        "16:00",
-                        "16:30",
-                        "17:00",
-                        "17:30",
-                        "18:00",
-                        "18:30",
-                        "19:00",
-                        "19:30",
-                        "20:00",
-                        "20:30",
-                        "21:00",
-                      ].map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
+                {newAppointment.service && (
+                  <div className="mb-8">
+                    <h4 className="text-white font-semibold mb-4 flex items-center">
+                      <Calendar className="w-5 h-5 ml-2" /> أختر التاريخ
+                    </h4>
+                    <div className="grid grid-cols-3 md:grid-cols-7 gap-2">
+                      {dates.map((date, i) => (
+                        <motion.button
+                          type="button"
+                          key={i}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: i * 0.03 }}
+                          onClick={() => handleDateSelect(date)}
+                          className={`p-2 rounded-md text-center transition-all text-xs ${
+                            isSameDay(newAppointment.date, date)
+                              ? "bg-primary-500 text-white"
+                              : "bg-dark-700 text-gray-300 hover:bg-dark-600"
+                          }`}
+                        >
+                          <div className="font-medium">
+                            {format(date, "EEE", { locale: getDateLocale() })}
+                          </div>
+                          <div className="font-bold text-sm">
+                            {format(date, "d")}
+                          </div>
+                          <div className="text-[10px]">
+                            {format(date, "MMM", { locale: getDateLocale() })}
+                          </div>
+                          {isToday(date) && (
+                            <div className="text-[10px] text-primary-300 mt-1">
+                              اليوم
+                            </div>
+                          )}
+                        </motion.button>
                       ))}
-                    </select>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {newAppointment.date && (
+                  <div className="mb-8">
+                    <h4 className="text-white font-semibold mb-4 flex items-center">
+                      <Clock className="w-5 h-5 ml-2" /> {t("selectTime")}
+                    </h4>
+                    {[...availableTimes, ...bookedTimes].length > 0 && dates ? (
+                      <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                        {[...new Set([...availableTimes, ...bookedTimes])]
+                          .sort((a, b) => a.localeCompare(b))
+                          .map((time, i) => {
+                            const isBooked = bookedTimes.includes(time);
+                            const available =
+                              !isBooked && isTimeSlotAvailable(time);
+                            return (
+                              <motion.button
+                                type="button"
+                                key={time}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.2, delay: i * 0.02 }}
+                                onClick={() =>
+                                  available && handleTimeSelect(time)
+                                }
+                                disabled={!available}
+                                className={`p-1.5 rounded-md text-center text-xs transition-all ${
+                                  newAppointment.time === time
+                                    ? "bg-primary-500 text-white"
+                                    : isBooked
+                                    ? "bg-dark-900 text-gray-500 cursor-not-allowed"
+                                    : available
+                                    ? "bg-dark-700 text-gray-300 hover:bg-dark-600"
+                                    : "bg-dark-800 text-gray-600 cursor-not-allowed"
+                                }`}
+                              >
+                                <div>{time}</div>
+                                {isBooked && (
+                                  <div className="text-[10px] mt-1">
+                                    {t("booked")}
+                                  </div>
+                                )}
+                              </motion.button>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Clock className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-400">{t("noAvailableSlots")}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex justify-end space-x-4 space-x-reverse">
                   <button
