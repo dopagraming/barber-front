@@ -126,7 +126,7 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
         <h4 className="text-white font-semibold mb-4 flex items-center">
           <Calendar className="w-5 h-5 ml-2" /> {t("selectDate")}
         </h4>
-        <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
+        <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
           {dates.map((date, i) => (
             <motion.button
               key={i}

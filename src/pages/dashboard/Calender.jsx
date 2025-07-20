@@ -73,7 +73,7 @@ const AppointmentTimeGrid = () => {
                 {apt.time}
               </p>
               <p className="text-white font-medium text-sm">
-                {apt.customer?.name}
+                {apt.customerName || apt.customer?.name}
               </p>
               <p className="text-gray-400 text-xs">{apt.customer?.phone}</p>
             </motion.div>

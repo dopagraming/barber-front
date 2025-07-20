@@ -9,8 +9,6 @@ import toast, { Toaster } from "react-hot-toast";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { urlBase64ToUint8Array } from "./utils/push";
-import api from "./lib/axios";
 
 // Components
 import Navbar from "./components/Navbar";
