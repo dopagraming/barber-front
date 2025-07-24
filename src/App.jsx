@@ -24,6 +24,8 @@ import BookingSystem from "./pages/BookingSystem";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/ForgotPasswordPage";
+import ResetPassword from "./pages/ResetPasswordPage";
 
 // Dashboard
 import Dashboard from "./pages/Dashboard";
@@ -238,6 +240,36 @@ const AppContent = () => {
                 <Profile isOpen={isOpen} />
               </main>
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/forget-password"
+          element={
+            <>
+              <SEOHead
+                title="نسيت كملة المرور - Ali Barber Shop"
+                description="غير كلمة المرور"
+              />
+              <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
+              <main id="main-content" className="pt-16">
+                <ForgotPassword />
+              </main>
+            </>
+          }
+        />
+        <Route
+          path="/reset-password/:token"
+          element={
+            <>
+              <SEOHead
+                title="نسيت كملة المرور - Ali Barber Shop"
+                description="غير كلمة المرور"
+              />
+              <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
+              <main id="main-content" className="pt-16">
+                <ResetPassword />
+              </main>
+            </>
           }
         />
 

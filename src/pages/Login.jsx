@@ -119,6 +119,13 @@ const Login = () => {
                   )}
                 </button>
               </div>
+              <button
+                className="text-dark-300 hover:text-dark-100 text-sm mt-2 transition"
+                type="button"
+                onClick={() => navigate("/forget-password")}
+              >
+                نسبت كلمة المرور؟
+              </button>
             </div>
 
             {/* Submit Button */}

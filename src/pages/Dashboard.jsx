@@ -1,36 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  Users,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  Clock,
-  Star,
-  BarChart3,
-  PieChart,
-} from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Cell,
-  Pie,
-} from "recharts";
+import { Users, Calendar, DollarSign, TrendingUp, Star } from "lucide-react";
+
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import LoadingSpinner from "../components/LoadingSpinner";
-import api from "../lib/axios";
 
 const Dashboard = () => {
   const [analytics, setAnalytics] = useState(null);
-  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -82,16 +59,6 @@ const Dashboard = () => {
       color: "bg-purple-500",
       change: "+5%",
     },
-  ];
-
-  // Mock data for charts
-  const monthlyData = [
-    { month: t("january"), appointments: 45, revenue: 2250 },
-    { month: t("february"), appointments: 52, revenue: 2600 },
-    { month: t("march"), appointments: 48, revenue: 2400 },
-    { month: t("april"), appointments: 61, revenue: 3050 },
-    { month: t("may"), appointments: 55, revenue: 2750 },
-    { month: t("june"), appointments: 67, revenue: 3350 },
   ];
 
   // const serviceData =
