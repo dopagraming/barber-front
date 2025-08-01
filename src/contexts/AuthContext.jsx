@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Set up axios defaults
   const token = localStorage.getItem("token");
   if (token) {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -95,7 +94,6 @@ export const AuthProvider = ({ children }) => {
       const result = await signInWithPopup(auth, provider);
       const googleUser = result.user;
 
-      // Optional: get ID token to send to backend for verification
       const idToken = await googleUser.getIdToken();
 
       const response = await api.post("api/auth/google", { idToken });
@@ -116,8 +114,8 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const res = await api.get("api/users/profile"); // endpoint يرجع بيانات المستخدم
-      setUser(res.data); // حدث الـ context
+      const res = await api.get("api/users/profile"); 
+      setUser(res.data); 
     } catch (err) {
       console.error("Failed to refresh user:", err);
     }

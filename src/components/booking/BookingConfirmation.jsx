@@ -106,7 +106,7 @@ const BookingConfirmation = ({ data, updateData, onNext, onPrev }) => {
             serviceDuration,
             status: "confirmed",
           };
-
+          console.log(appointmentData);
           const response = await api.post("api/appointments", appointmentData);
           allAppointments.push(response.data);
         }

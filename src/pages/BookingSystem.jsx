@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ServiceSelection from "../components/booking/ServiceSelection";
-import BarberSelection from "../components/booking/BarberSelection";
 import DateTimeSelection from "../components/booking/DateTimeSelection";
 import RepeatOptions from "../components/booking/RepeatOptions";
 import BookingConfirmation from "../components/booking/BookingConfirmation";

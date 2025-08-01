@@ -29,10 +29,8 @@ import ResetPassword from "./pages/ResetPasswordPage";
 
 // Dashboard
 import Dashboard from "./pages/Dashboard";
-import DashboardAppointments from "./pages/dashboard/Appointments";
 import DashboardServices from "./pages/dashboard/Services";
 import DashboardCustomers from "./pages/dashboard/Customers";
-import DashboardBarbers from "./pages/dashboard/Barbers";
 import DashboardAnalytics from "./pages/dashboard/Analytics";
 import TimeManagement from "./pages/dashboard/TimeManagement";
 import Calender from "./pages/dashboard/Calender";
@@ -289,20 +287,6 @@ const AppContent = () => {
           }
         />
         <Route
-          path="/dashboard/appointments"
-          element={
-            <DashboardRoute>
-              <SEOHead
-                title="إدارة المواعيد - Ali Barber Shop"
-                description="عرض وإدارة جميع مواعيد الصالون"
-              />
-              <main id="main-content">
-                <DashboardAppointments />
-              </main>
-            </DashboardRoute>
-          }
-        />
-        <Route
           path="/dashboard/services"
           element={
             <DashboardRoute requiredRole="admin">
@@ -330,20 +314,7 @@ const AppContent = () => {
             </DashboardRoute>
           }
         />
-        <Route
-          path="/dashboard/barbers"
-          element={
-            <DashboardRoute requiredRole="admin">
-              <SEOHead
-                title="إدارة الحلاقين - Ali Barber Shop"
-                description="إضافة ومتابعة فريق الحلاقين"
-              />
-              <main id="main-content">
-                <DashboardBarbers />
-              </main>
-            </DashboardRoute>
-          }
-        />
+
         <Route
           path="/dashboard/analytics"
           element={

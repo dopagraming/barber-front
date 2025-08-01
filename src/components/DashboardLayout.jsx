@@ -35,12 +35,7 @@ const DashboardLayout = ({ children }) => {
       icon: BarChart3,
       roles: ["admin"],
     },
-    {
-      name: "المواعيد",
-      href: "/dashboard/appointments",
-      icon: Calendar,
-      roles: ["admin", "barber"],
-    },
+
     {
       name: "العملاء",
       href: "/dashboard/customers",
@@ -51,12 +46,6 @@ const DashboardLayout = ({ children }) => {
       name: "الخدمات",
       href: "/dashboard/services",
       icon: Scissors,
-      roles: ["admin"],
-    },
-    {
-      name: "الحلاقين",
-      href: "/dashboard/barbers",
-      icon: UserCheck,
       roles: ["admin"],
     },
     {

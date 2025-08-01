@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { format, addDays, isSameDay, isToday, isBefore } from "date-fns";
@@ -6,9 +6,27 @@ import { ar, enUS, he } from "date-fns/locale";
 import LoadingSpinner from "../LoadingSpinner";
 import { useLanguage } from "../../contexts/LanguageContext";
 import api from "../../lib/axios";
+import { toZonedTime } from "date-fns-tz";
+import { format as tzFormat } from "date-fns-tz";
+
+// Helper to pad numbers for formatting
+function pad(n) {
+  return n.toString().padStart(2, "0");
+}
+
+// --- NEW: Build Palestine local time string
+function getPalestineDateTime(selectedDate, selectedTime) {
+  const timezone = "Asia/Gaza";
+  // Get only the date part in Palestine
+  const datePart = tzFormat(selectedDate, "yyyy-MM-dd", { timeZone: timezone });
+  // Combine with time string "HH:mm"
+  return `${datePart}T${selectedTime}`;
+}
 
 const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
-  const [selectedDate, setSelectedDate] = useState(data.date || new Date());
+  const [selectedDate, setSelectedDate] = useState(
+    data.date ? new Date(data.date) : new Date()
+  );
   const [selectedTime, setSelectedTime] = useState(data.time || null);
   const [availableDays, setAvailableDays] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,34 +91,47 @@ const DateTimeSelection = ({ data, updateData, onNext, onPrev }) => {
     }
   };
 
-  const generateDates = () => {
-    const startDate = new Date();
+  const dates = useMemo(() => {
+    if (!availableDays.length) return [];
+    const timezone = "Asia/Gaza";
+    const startDate = toZonedTime(new Date(), timezone);
     const results = [];
     const allowed = new Set(availableDays.map((d) => d.id));
 
     for (let i = 0; i < 60; i++) {
       const date = addDays(startDate, i);
-      const dayName = date
-        .toLocaleDateString("en-US", { weekday: "long" })
+      const zonedDate = toZonedTime(date, timezone);
+      const dayName = zonedDate
+        .toLocaleDateString("en-US", { weekday: "long", timeZone: timezone })
         .toLowerCase();
-      if (allowed.has(dayName)) results.push(date);
+      if (allowed.has(dayName)) results.push(zonedDate);
       if (results.length >= 14) break;
     }
-
     return results;
-  };
+  }, [availableDays]);
 
-  const dates = generateDates();
-
+  // --- When selecting a date, don't set time until user picks
   const handleDateSelect = (date) => {
     setSelectedDate(date);
     setSelectedTime(null);
-    updateData({ date, time: null });
+    updateData({
+      date: null,
+      time: null,
+      timezone: "Asia/Gaza",
+    });
   };
 
+  // --- When selecting time, build date/time string in Palestine time
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
-    updateData({ time });
+
+    const palestineDateTime = getPalestineDateTime(selectedDate, time);
+
+    updateData({
+      date: palestineDateTime, // Example: "2025-08-17T17:20"
+      time,
+      timezone: "Asia/Gaza",
+    });
   };
 
   const isTimeSlotAvailable = (time) => {
